@@ -9287,7 +9287,7 @@ var $lattyware$elm_fontawesome$FontAwesome$view = function (presentation) {
 	return A2($lattyware$elm_fontawesome$FontAwesome$internalView, presentation, _List_Nil);
 };
 var $author$project$OWBTheme$faLink = F4(
-	function (colr, size, path, icon) {
+	function (colr, innerStyle, path, icon) {
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$a,
 			_List_fromArray(
@@ -9303,17 +9303,18 @@ var $author$project$OWBTheme$faLink = F4(
 				[
 					A2(
 					$rtfeldman$elm_css$Html$Styled$div,
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$Attributes$css(
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
-									$rtfeldman$elm_css$Css$width(size),
-									$rtfeldman$elm_css$Css$height(size),
-									$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer)
-								]))
-						]),
+					A2(
+						$elm$core$List$append,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$Attributes$css(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto),
+										$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer)
+									]))
+							]),
+						innerStyle),
 					_List_fromArray(
 						[
 							$rtfeldman$elm_css$Html$Styled$fromUnstyled(
@@ -9335,6 +9336,21 @@ var $rtfeldman$elm_css$Css$fitContent = _Utils_update(
 	$rtfeldman$elm_css$Css$fillAvailable,
 	{ah: 'fit-content'});
 var $rtfeldman$elm_css$Html$Styled$img = $rtfeldman$elm_css$Html$Styled$node('img');
+var $rtfeldman$elm_css$Css$Media$maxWidth = function (value) {
+	return A2($rtfeldman$elm_css$Css$Media$feature, 'max-width', value);
+};
+var $author$project$OWBTheme$mobile = $rtfeldman$elm_css$Css$Media$withMedia(
+	_List_fromArray(
+		[
+			A2(
+			$rtfeldman$elm_css$Css$Media$only,
+			$rtfeldman$elm_css$Css$Media$screen,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Css$Media$maxWidth(
+					$rtfeldman$elm_css$Css$px(649))
+				]))
+		]));
 var $rtfeldman$elm_css$Css$paddingBottom = $rtfeldman$elm_css$Css$prop1('padding-bottom');
 var $rtfeldman$elm_css$Css$rgb = F3(
 	function (r, g, b) {
@@ -9406,6 +9422,14 @@ var $author$project$OWBTheme$menuIconBtn = F2(
 										$rtfeldman$elm_css$Css$px(1),
 										$rtfeldman$elm_css$Css$px(4),
 										A3($rtfeldman$elm_css$Css$rgb, 0, 0, 0))
+									])),
+								$author$project$OWBTheme$mobile(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$padding(
+										$rtfeldman$elm_css$Css$px(8)),
+										$rtfeldman$elm_css$Css$paddingBottom(
+										$rtfeldman$elm_css$Css$px(3))
 									]))
 							]))
 					]),
@@ -9422,7 +9446,15 @@ var $author$project$OWBTheme$menuIconBtn = F2(
 									$rtfeldman$elm_css$Css$width(
 									$rtfeldman$elm_css$Css$px(50)),
 									$rtfeldman$elm_css$Css$height(
-									$rtfeldman$elm_css$Css$px(50))
+									$rtfeldman$elm_css$Css$px(50)),
+									$author$project$OWBTheme$mobile(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$width(
+											$rtfeldman$elm_css$Css$px(42)),
+											$rtfeldman$elm_css$Css$height(
+											$rtfeldman$elm_css$Css$px(42))
+										]))
 								])),
 							$rtfeldman$elm_css$Html$Styled$Attributes$src(iconPath)
 						]),
@@ -9470,6 +9502,14 @@ var $author$project$Main$mobileNavStyle = $rtfeldman$elm_css$Html$Styled$Attribu
 					$rtfeldman$elm_css$Css$px(1),
 					$rtfeldman$elm_css$Css$px(4),
 					A3($rtfeldman$elm_css$Css$rgb, 0, 0, 0))
+				])),
+			$author$project$OWBTheme$mobile(
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Css$width(
+					$rtfeldman$elm_css$Css$px(30)),
+					$rtfeldman$elm_css$Css$height(
+					$rtfeldman$elm_css$Css$px(30))
 				]))
 		]));
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
@@ -9549,7 +9589,25 @@ var $author$project$Main$mobileNav = function (model) {
 								A4(
 								$author$project$OWBTheme$faLink,
 								(!model.ag) ? $author$project$OWBTheme$theme.cn : $author$project$OWBTheme$theme.cm,
-								$rtfeldman$elm_css$Css$px(25),
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Html$Styled$Attributes$css(
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Css$height(
+												$rtfeldman$elm_css$Css$px(25)),
+												$rtfeldman$elm_css$Css$width(
+												$rtfeldman$elm_css$Css$px(25)),
+												$author$project$OWBTheme$mobile(
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$height(
+														$rtfeldman$elm_css$Css$px(20)),
+														$rtfeldman$elm_css$Css$width(
+														$rtfeldman$elm_css$Css$px(20))
+													]))
+											]))
+									]),
 								model._.ap + '?p=about',
 								$lattyware$elm_fontawesome$FontAwesome$Regular$user)
 							])),
@@ -9562,7 +9620,25 @@ var $author$project$Main$mobileNav = function (model) {
 								A4(
 								$author$project$OWBTheme$faLink,
 								(model.ag === 1) ? $author$project$OWBTheme$theme.cn : $author$project$OWBTheme$theme.cm,
-								$rtfeldman$elm_css$Css$px(30),
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Html$Styled$Attributes$css(
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Css$height(
+												$rtfeldman$elm_css$Css$px(30)),
+												$rtfeldman$elm_css$Css$width(
+												$rtfeldman$elm_css$Css$px(30)),
+												$author$project$OWBTheme$mobile(
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$height(
+														$rtfeldman$elm_css$Css$px(25)),
+														$rtfeldman$elm_css$Css$width(
+														$rtfeldman$elm_css$Css$px(25))
+													]))
+											]))
+									]),
 								model._.ap + '?p=portfolio',
 								$lattyware$elm_fontawesome$FontAwesome$Solid$briefcase)
 							])),
@@ -9587,7 +9663,25 @@ var $author$project$Main$mobileNav = function (model) {
 								A4(
 								$author$project$OWBTheme$faLink,
 								(model.ag === 3) ? $author$project$OWBTheme$theme.cn : $author$project$OWBTheme$theme.cm,
-								$rtfeldman$elm_css$Css$px(35),
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Html$Styled$Attributes$css(
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Css$height(
+												$rtfeldman$elm_css$Css$px(35)),
+												$rtfeldman$elm_css$Css$width(
+												$rtfeldman$elm_css$Css$px(35)),
+												$author$project$OWBTheme$mobile(
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$height(
+														$rtfeldman$elm_css$Css$px(30)),
+														$rtfeldman$elm_css$Css$width(
+														$rtfeldman$elm_css$Css$px(30))
+													]))
+											]))
+									]),
 								model._.ap + '?p=contact',
 								$lattyware$elm_fontawesome$FontAwesome$Regular$comments)
 							]))
@@ -9635,6 +9729,20 @@ var $author$project$OWBTheme$commonTitle = _List_fromArray(
 		$rtfeldman$elm_css$Css$px(3))
 	]);
 var $rtfeldman$elm_css$Html$Styled$h1 = $rtfeldman$elm_css$Html$Styled$node('h1');
+var $author$project$OWBTheme$tablet = $rtfeldman$elm_css$Css$Media$withMedia(
+	_List_fromArray(
+		[
+			A2(
+			$rtfeldman$elm_css$Css$Media$only,
+			$rtfeldman$elm_css$Css$Media$screen,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Css$Media$minWidth(
+					$rtfeldman$elm_css$Css$px(650)),
+					$rtfeldman$elm_css$Css$Media$maxWidth(
+					$rtfeldman$elm_css$Css$px(1079))
+				]))
+		]));
 var $author$project$OWBTheme$title = F2(
 	function (attributes, contents) {
 		return A2(
@@ -9645,9 +9753,28 @@ var $author$project$OWBTheme$title = F2(
 					[
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						A2(
-							$elm$core$List$cons,
-							$rtfeldman$elm_css$Css$fontSize(
-								$rtfeldman$elm_css$Css$px(54)),
+							$elm$core$List$append,
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$fontSize(
+									$rtfeldman$elm_css$Css$px(54)),
+									$author$project$OWBTheme$tablet(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$margin(
+											$rtfeldman$elm_css$Css$px(20)),
+											$rtfeldman$elm_css$Css$fontSize(
+											$rtfeldman$elm_css$Css$px(45))
+										])),
+									$author$project$OWBTheme$mobile(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$margin(
+											$rtfeldman$elm_css$Css$px(20)),
+											$rtfeldman$elm_css$Css$fontSize(
+											$rtfeldman$elm_css$Css$px(40))
+										]))
+								]),
 							$author$project$OWBTheme$commonTitle))
 					]),
 				attributes),
@@ -10225,7 +10352,10 @@ var $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled = function (vdom) {
 	}
 };
 var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled;
+var $rtfeldman$elm_css$Css$flexWrap = $rtfeldman$elm_css$Css$prop1('flex-wrap');
+var $rtfeldman$elm_css$Css$marginTop = $rtfeldman$elm_css$Css$prop1('margin-top');
 var $rtfeldman$elm_css$Html$Styled$p = $rtfeldman$elm_css$Html$Styled$node('p');
+var $rtfeldman$elm_css$Css$wrap = {bf: 0, bI: 0, ah: 'wrap'};
 var $author$project$About$view = _Utils_Tuple2(
 	'About',
 	A2(
@@ -10236,11 +10366,61 @@ var $author$project$About$view = _Utils_Tuple2(
 				_List_fromArray(
 					[
 						$rtfeldman$elm_css$Css$displayFlex,
-						$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center)
+						$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
+						$author$project$OWBTheme$mobile(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$flexWrap($rtfeldman$elm_css$Css$wrap)
+							]))
 					]))
 			]),
 		_List_fromArray(
 			[
+				A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$marginRight(
+								$rtfeldman$elm_css$Css$px(35)),
+								$rtfeldman$elm_css$Css$marginTop(
+								$rtfeldman$elm_css$Css$px(18)),
+								$author$project$OWBTheme$mobile(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$marginRight(
+										$rtfeldman$elm_css$Css$px(0)),
+										$rtfeldman$elm_css$Css$marginTop(
+										$rtfeldman$elm_css$Css$px(0))
+									]))
+							]))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$rtfeldman$elm_css$Html$Styled$img,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$Attributes$src('../res/img/pages/about/profile.jpg'),
+								$rtfeldman$elm_css$Html$Styled$Attributes$css(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$height(
+										$rtfeldman$elm_css$Css$px(150)),
+										$rtfeldman$elm_css$Css$borderRadius(
+										$rtfeldman$elm_css$Css$px(5)),
+										$author$project$OWBTheme$mobile(
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Css$height(
+												$rtfeldman$elm_css$Css$px(250))
+											]))
+									]))
+							]),
+						_List_Nil)
+					])),
 				A2(
 				$rtfeldman$elm_css$Html$Styled$div,
 				_List_Nil,
@@ -10260,25 +10440,6 @@ var $author$project$About$view = _Utils_Tuple2(
 							[
 								$rtfeldman$elm_css$Html$Styled$text('I have several personal projects including this website: a bible comparer, a chess game, and an educational maze maker. Check out my portfolio for more!')
 							]))
-					])),
-				A2(
-				$rtfeldman$elm_css$Html$Styled$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$rtfeldman$elm_css$Html$Styled$img,
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$Attributes$src('../res/img/pages/about/profile.jpg'),
-								$rtfeldman$elm_css$Html$Styled$Attributes$css(
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Css$height(
-										$rtfeldman$elm_css$Css$px(150))
-									]))
-							]),
-						_List_Nil)
 					]))
 			])));
 var $rtfeldman$elm_css$Html$Styled$br = $rtfeldman$elm_css$Html$Styled$node('br');
@@ -17442,6 +17603,16 @@ var $author$project$OWBTheme$linkBtn = F2(
 				attributes),
 			contents);
 	});
+var $author$project$Portfolio$portfolioEntryStyle = $rtfeldman$elm_css$Html$Styled$Attributes$css(
+	_List_fromArray(
+		[
+			$rtfeldman$elm_css$Css$displayFlex,
+			$author$project$OWBTheme$mobile(
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Css$flexWrap($rtfeldman$elm_css$Css$wrap)
+				]))
+		]));
 var $rtfeldman$elm_css$Css$marginLeft = $rtfeldman$elm_css$Css$prop1('margin-left');
 var $author$project$Portfolio$previewContent = F2(
 	function (attributes, contents) {
@@ -17455,10 +17626,16 @@ var $author$project$Portfolio$previewContent = F2(
 						_List_fromArray(
 							[
 								$rtfeldman$elm_css$Css$marginLeft(
-								$rtfeldman$elm_css$Css$px(5)),
+								$rtfeldman$elm_css$Css$px(35)),
 								$rtfeldman$elm_css$Css$marginRight(
 								$rtfeldman$elm_css$Css$px(5)),
-								$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
+								$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+								$author$project$OWBTheme$mobile(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$marginLeft(
+										$rtfeldman$elm_css$Css$px(5))
+									]))
 							]))
 					]),
 				attributes),
@@ -17467,26 +17644,41 @@ var $author$project$Portfolio$previewContent = F2(
 var $author$project$Portfolio$previewImg = F2(
 	function (attributes, contents) {
 		return A2(
-			$rtfeldman$elm_css$Html$Styled$img,
-			A2(
-				$elm$core$List$append,
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+			$rtfeldman$elm_css$Html$Styled$div,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$margin($rtfeldman$elm_css$Css$auto)
+						]))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$rtfeldman$elm_css$Html$Styled$img,
+					A2(
+						$elm$core$List$append,
 						_List_fromArray(
 							[
-								$rtfeldman$elm_css$Css$height(
-								$rtfeldman$elm_css$Css$px(200)),
-								A4(
-								$rtfeldman$elm_css$Css$boxShadow4,
-								$rtfeldman$elm_css$Css$px(0),
-								$rtfeldman$elm_css$Css$px(0),
-								$rtfeldman$elm_css$Css$px(5),
-								A3($rtfeldman$elm_css$Css$rgb, 0, 0, 0))
-							]))
-					]),
-				attributes),
-			contents);
+								$rtfeldman$elm_css$Html$Styled$Attributes$css(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$height(
+										$rtfeldman$elm_css$Css$px(200)),
+										$rtfeldman$elm_css$Css$width(
+										$rtfeldman$elm_css$Css$px(250)),
+										A4(
+										$rtfeldman$elm_css$Css$boxShadow4,
+										$rtfeldman$elm_css$Css$px(0),
+										$rtfeldman$elm_css$Css$px(0),
+										$rtfeldman$elm_css$Css$px(5),
+										A3($rtfeldman$elm_css$Css$rgb, 0, 0, 0))
+									]))
+							]),
+						attributes),
+					contents)
+				]));
 	});
 var $author$project$Portfolio$previewTitle = F2(
 	function (attributes, contents) {
@@ -17520,9 +17712,28 @@ var $author$project$OWBTheme$subtitle = F2(
 					[
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
 						A2(
-							$elm$core$List$cons,
-							$rtfeldman$elm_css$Css$fontSize(
-								$rtfeldman$elm_css$Css$px(36)),
+							$elm$core$List$append,
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$fontSize(
+									$rtfeldman$elm_css$Css$px(36)),
+									$author$project$OWBTheme$tablet(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$margin(
+											$rtfeldman$elm_css$Css$px(5)),
+											$rtfeldman$elm_css$Css$fontSize(
+											$rtfeldman$elm_css$Css$px(25))
+										])),
+									$author$project$OWBTheme$mobile(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$margin(
+											$rtfeldman$elm_css$Css$px(5)),
+											$rtfeldman$elm_css$Css$fontSize(
+											$rtfeldman$elm_css$Css$px(23))
+										]))
+								]),
 							$author$project$OWBTheme$commonTitle))
 					]),
 				attributes),
@@ -17578,13 +17789,16 @@ var $author$project$Portfolio$view = function (model) {
 							A2(
 							$rtfeldman$elm_css$Html$Styled$div,
 							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Html$Styled$Attributes$css(
-									_List_fromArray(
-										[$rtfeldman$elm_css$Css$displayFlex]))
-								]),
+								[$author$project$Portfolio$portfolioEntryStyle]),
 							_List_fromArray(
 								[
+									A2(
+									$author$project$Portfolio$previewImg,
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Html$Styled$Attributes$src('../res/img/pages/portfolio/foe-1-9-calculator.png')
+										]),
+									_List_Nil),
 									A2(
 									$author$project$Portfolio$previewContent,
 									_List_Nil,
@@ -17614,24 +17828,13 @@ var $author$project$Portfolio$view = function (model) {
 												[
 													$rtfeldman$elm_css$Html$Styled$text('Check it out!')
 												]))
-										])),
-									A2(
-									$author$project$Portfolio$previewImg,
-									_List_fromArray(
-										[
-											$rtfeldman$elm_css$Html$Styled$Attributes$src('../res/img/pages/portfolio/foe-1-9-calculator.png')
-										]),
-									_List_Nil)
+										]))
 								])),
 							A2($rtfeldman$elm_css$Html$Styled$hr, _List_Nil, _List_Nil),
 							A2(
 							$rtfeldman$elm_css$Html$Styled$div,
 							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Html$Styled$Attributes$css(
-									_List_fromArray(
-										[$rtfeldman$elm_css$Css$displayFlex]))
-								]),
+								[$author$project$Portfolio$portfolioEntryStyle]),
 							_List_fromArray(
 								[
 									A2(
@@ -17659,110 +17862,6 @@ var $author$project$Portfolio$view = function (model) {
 											_List_fromArray(
 												[
 													$rtfeldman$elm_css$Html$Styled$text('This is my WebGL project of a checkered board game. Currently, it only plays chess, but check back later for other games and two-player functionality.')
-												])),
-											A2(
-											$author$project$OWBTheme$linkBtn,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('Check it out!')
-												]))
-										]))
-								])),
-							A2($rtfeldman$elm_css$Html$Styled$hr, _List_Nil, _List_Nil),
-							A2(
-							$rtfeldman$elm_css$Html$Styled$div,
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Html$Styled$Attributes$css(
-									_List_fromArray(
-										[$rtfeldman$elm_css$Css$displayFlex]))
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$author$project$Portfolio$previewContent,
-									_List_Nil,
-									_List_fromArray(
-										[
-											A2(
-											$author$project$Portfolio$previewTitle,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('Stock Ticker')
-												])),
-											A2(
-											$rtfeldman$elm_css$Html$Styled$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('This is a stock ticker powered by TradingView. You can input any stock symbol they support and get that stock\'s graph. It has an on-screen keyboard if your touchscreen device happens to not have one.')
-												])),
-											A2(
-											$author$project$OWBTheme$linkBtn,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('Check it out!')
-												]))
-										])),
-									A2(
-									$author$project$Portfolio$previewImg,
-									_List_fromArray(
-										[
-											$rtfeldman$elm_css$Html$Styled$Attributes$src('../res/img/pages/portfolio/stock-ticker.png')
-										]),
-									_List_Nil)
-								])),
-							A2($rtfeldman$elm_css$Html$Styled$hr, _List_Nil, _List_Nil),
-							A2(
-							$rtfeldman$elm_css$Html$Styled$div,
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Html$Styled$Attributes$css(
-									_List_fromArray(
-										[$rtfeldman$elm_css$Css$displayFlex]))
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$author$project$Portfolio$previewImg,
-									_List_fromArray(
-										[
-											$rtfeldman$elm_css$Html$Styled$Attributes$src('../res/img/pages/portfolio/foe-1-9-calculator.png')
-										]),
-									_List_Nil),
-									A2(
-									$author$project$Portfolio$previewContent,
-									_List_Nil,
-									_List_fromArray(
-										[
-											A2(
-											$author$project$Portfolio$previewTitle,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('FOE 1.9 Calculator')
-												])),
-											A2(
-											$rtfeldman$elm_css$Html$Styled$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('This is for the game '),
-													A2(
-													$author$project$OWBTheme$link,
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Html$Styled$Attributes$href('https://en0.forgeofempires.com/page/'),
-															$rtfeldman$elm_css$Html$Styled$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Html$Styled$text('Forge of Empires')
-														])),
-													$rtfeldman$elm_css$Html$Styled$text(' and is used to calculate the forge points required to contribute 1.9 * the reward in a Great Building.')
 												])),
 											A2(
 											$author$project$OWBTheme$linkBtn,
