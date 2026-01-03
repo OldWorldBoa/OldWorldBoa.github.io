@@ -8,7 +8,7 @@ import FontAwesome as Icon exposing (Icon)
 import FontAwesome.Regular as Icon
 import FontAwesome.Styles as Icon
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (attribute, css, href, src)
+import Html.Styled.Attributes exposing (css, href, src)
 import Html.Styled.Events exposing (onClick)
 import Messages exposing (Message)
 
@@ -38,12 +38,12 @@ desktop =
 
 tablet : List Style -> Style
 tablet =
-    withMedia [ only screen [ Css.Media.minWidth (px 750), Css.Media.maxWidth (px 1079) ] ]
+    withMedia [ only screen [ Css.Media.minWidth (px 650), Css.Media.maxWidth (px 1079) ] ]
 
 
 mobile : List Style -> Style
 mobile =
-    withMedia [ only screen [ Css.Media.maxWidth (px 749) ] ]
+    withMedia [ only screen [ Css.Media.maxWidth (px 649) ] ]
 
 
 initGlobalStyles : Html msg
@@ -114,6 +114,10 @@ menuIconBtn attributes iconPath =
                 , active
                     [ boxShadow4 (px -1) (px 1) (px 4) (rgb 0 0 0)
                     ]
+                , mobile
+                    [ padding (px 8)
+                    , paddingBottom (px 3)
+                    ]
                 ]
             ]
             attributes
@@ -122,6 +126,10 @@ menuIconBtn attributes iconPath =
             [ css
                 [ width (px 50)
                 , height (px 50)
+                , mobile
+                    [ width (px 42)
+                    , height (px 42)
+                    ]
                 ]
             , src iconPath
             ]
@@ -188,12 +196,12 @@ faButton msg icon =
         [ Html.Styled.fromUnstyled (Icon.view icon) ]
 
 
-faLink : Color -> LengthOrAuto compatible -> String -> Icon Icon.WithoutId -> Html Message
-faLink colr size path icon =
+faLink : Color -> List (Attribute Message) -> String -> Icon Icon.WithoutId -> Html Message
+faLink colr innerStyle path icon =
     a
         [ href path, css [ color colr ] ]
         [ div
-            [ css [ margin auto, width size, height size, cursor pointer ] ]
+            (List.append [ css [ margin auto, cursor pointer ] ] innerStyle)
             [ Html.Styled.fromUnstyled (Icon.view icon) ]
         ]
 
@@ -210,8 +218,12 @@ title attributes contents =
     h1
         (List.append
             [ css
-                (fontSize (px 54)
-                    :: commonTitle
+                (List.append
+                    [ fontSize (px 54)
+                    , tablet [ margin (px 20), fontSize (px 45) ]
+                    , mobile [ margin (px 20), fontSize (px 40) ]
+                    ]
+                    commonTitle
                 )
             ]
             attributes
@@ -224,8 +236,12 @@ subtitle attributes contents =
     h2
         (List.append
             [ css
-                (fontSize (px 36)
-                    :: commonTitle
+                (List.append
+                    [ fontSize (px 36)
+                    , tablet [ margin (px 5), fontSize (px 25) ]
+                    , mobile [ margin (px 5), fontSize (px 23) ]
+                    ]
+                    commonTitle
                 )
             ]
             attributes

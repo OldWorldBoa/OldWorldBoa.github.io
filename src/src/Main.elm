@@ -5,15 +5,14 @@ import Browser
 import Browser.Navigation as Nav
 import Contact
 import ContractionTimer
-import Css exposing (absolute, active, auto, backgroundColor, backgroundImage, backgroundPosition, backgroundRepeat, backgroundSize, block, border3, borderBottom3, borderBox, borderLeft3, borderRadius, borderRadius4, boxShadow4, boxSizing, center, color, column, cursor, display, displayFlex, fitContent, flexDirection, height, justifyContent, margin, marginBottom, marginRight, maxWidth, noRepeat, none, overflow, padding, paddingBottom, paddingLeft, paddingRight, paddingTop, pct, pointer, position, px, rgb, right, solid, textAlign, textDecoration, url, width)
-import FontAwesome exposing (Icon)
+import Css exposing (absolute, active, auto, backgroundColor, backgroundImage, backgroundPosition, backgroundRepeat, backgroundSize, block, border3, borderBottom3, borderBox, borderLeft3, borderRadius, borderRadius4, boxShadow4, boxSizing, center, column, cursor, display, displayFlex, flexDirection, height, justifyContent, margin, marginBottom, marginRight, maxWidth, noRepeat, none, overflow, padding, paddingBottom, paddingLeft, paddingRight, paddingTop, pct, pointer, position, px, rgb, right, solid, textDecoration, url, width)
 import FontAwesome.Regular
 import FontAwesome.Solid
 import Html.Events exposing (onClick)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, rel)
 import Messages exposing (Message(..))
-import OWBTheme exposing (desktop, faLink, initGlobalStyles, menuBtn, menuIconBtn, spacer, theme)
+import OWBTheme exposing (desktop, faLink, initGlobalStyles, menuBtn, menuIconBtn, mobile, spacer, theme)
 import Portfolio
 import Time
 import Url
@@ -251,7 +250,12 @@ mobileNav model =
                      else
                         theme.link
                     )
-                    (px 25)
+                    [ css
+                        [ height (px 25)
+                        , width (px 25)
+                        , mobile [ height (px 20), width (px 20) ]
+                        ]
+                    ]
                     (model.url.path ++ "?p=about")
                     FontAwesome.Regular.user
                 ]
@@ -264,7 +268,12 @@ mobileNav model =
                      else
                         theme.link
                     )
-                    (px 30)
+                    [ css
+                        [ height (px 30)
+                        , width (px 30)
+                        , mobile [ height (px 25), width (px 25) ]
+                        ]
+                    ]
                     (model.url.path ++ "?p=portfolio")
                     FontAwesome.Solid.briefcase
                 ]
@@ -279,7 +288,12 @@ mobileNav model =
                      else
                         theme.link
                     )
-                    (px 35)
+                    [ css
+                        [ height (px 35)
+                        , width (px 35)
+                        , mobile [ height (px 30), width (px 30) ]
+                        ]
+                    ]
                     (model.url.path ++ "?p=contact")
                     FontAwesome.Regular.comments
                 ]
@@ -304,4 +318,5 @@ mobileNavStyle =
         , margin auto
         , active
             [ boxShadow4 (px -1) (px 1) (px 4) (rgb 0 0 0) ]
+        , mobile [ width (px 30), height (px 30) ]
         ]
