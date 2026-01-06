@@ -17796,7 +17796,7 @@ var $author$project$Portfolio$view = function (model) {
 									$author$project$Portfolio$previewImg,
 									_List_fromArray(
 										[
-											$rtfeldman$elm_css$Html$Styled$Attributes$src('../res/img/pages/portfolio/foe-1-9-calculator.png')
+											$rtfeldman$elm_css$Html$Styled$Attributes$src('../res/img/pages/portfolio/contraction-timer.png')
 										]),
 									_List_Nil),
 									A2(
@@ -17865,7 +17865,10 @@ var $author$project$Portfolio$view = function (model) {
 												])),
 											A2(
 											$author$project$OWBTheme$linkBtn,
-											_List_Nil,
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$Attributes$href('https://info.oldworldboa.ca/webgl/index.html')
+												]),
 											_List_fromArray(
 												[
 													$rtfeldman$elm_css$Html$Styled$text('Check it out!')
