@@ -1,0 +1,42 @@
+html {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+#overlay {
+  position: absolute;
+  z-index: 1;
+}
+
+#button {
+  height: 100px;
+  width: 200px;
+  background-color: #808080;
+}
+
+#attribution {
+  position: absolute;
+  bottom: 0;
+  color: darkorange;
+  right: 0;
+  padding: 10px;
+  background-color: rgba(1, 1, 1, 0.5);
+  border-left: 2px solid white;
+  border-top: 2px solid white;
+  border-radius: 5px 0 0 0;
+}
+
+#attribution a {
+  color: lightblue!important;
+}
