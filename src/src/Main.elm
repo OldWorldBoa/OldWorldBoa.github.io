@@ -364,4 +364,4 @@ decoder url key =
         (D.succeed url)
         (D.succeed (UrlParser.fromUrl url))
         (D.succeed False)
-        (D.field "ctModel" ContractionTimer.decoderCT)
+        (D.field "ct" ContractionTimer.decoderCT)
