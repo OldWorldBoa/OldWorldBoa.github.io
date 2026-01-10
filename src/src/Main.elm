@@ -26,7 +26,7 @@ main =
     Browser.application
         { init = init
         , view = view
-        , update = update
+        , update = updateWithStorage
         , subscriptions = subscriptions
         , onUrlChange = UrlChanged
         , onUrlRequest = LinkClicked

@@ -5793,6 +5793,71 @@ var $author$project$Main$subscriptions = function (model) {
 		return $elm$core$Platform$Sub$none;
 	}
 };
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(0),
+			pairs));
+};
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0;
+	return millis;
+};
+var $author$project$ContractionTimer$encodeContraction = function (contraction) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'start',
+				$elm$json$Json$Encode$int(
+					$elm$time$Time$posixToMillis(contraction.bp))),
+				_Utils_Tuple2(
+				'end',
+				$elm$json$Json$Encode$int(
+					$elm$time$Time$posixToMillis(contraction.av))),
+				_Utils_Tuple2(
+				'duration',
+				$elm$json$Json$Encode$int(contraction.ak))
+			]));
+};
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(0),
+				entries));
+	});
+var $author$project$Main$encode = function (model) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'ct',
+				$elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'contractions',
+							A2(
+								$elm$json$Json$Encode$list,
+								function (a) {
+									return a;
+								},
+								A2($elm$core$List$map, $author$project$ContractionTimer$encodeContraction, model.aQ.ad)))
+						])))
+			]));
+};
+var $author$project$Main$setStorage = _Platform_outgoingPort('setStorage', $elm$core$Basics$identity);
 var $author$project$Messages$forContractionTimer = function (msg) {
 	switch (msg.$) {
 		case 5:
@@ -5836,10 +5901,6 @@ var $author$project$Messages$CT_InitTimer = function (a) {
 var $author$project$ContractionTimer$Table = 1;
 var $author$project$ContractionTimer$Timer = function (a) {
 	return {$: 0, a: a};
-};
-var $elm$time$Time$posixToMillis = function (_v0) {
-	var millis = _v0;
-	return millis;
 };
 var $author$project$ContractionTimer$newContraction = F2(
 	function (start, end) {
@@ -6236,6 +6297,21 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			}
 		}
+	});
+var $author$project$Main$updateWithStorage = F2(
+	function (msg, model) {
+		var _v0 = A2($author$project$Main$update, msg, model);
+		var newModel = _v0.a;
+		var cmd = _v0.b;
+		return _Utils_Tuple2(
+			newModel,
+			$elm$core$Platform$Cmd$batch(
+				_List_fromArray(
+					[
+						$author$project$Main$setStorage(
+						$author$project$Main$encode(newModel)),
+						cmd
+					])));
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $elm$browser$Browser$Document = F2(
@@ -18029,5 +18105,5 @@ var $author$project$Main$view = function (model) {
 	return A2($elm$browser$Browser$Document, title, body);
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
-	{eB: $author$project$Main$init, eO: $author$project$Messages$UrlChanged, eP: $author$project$Messages$LinkClicked, e8: $author$project$Main$subscriptions, fn: $author$project$Main$update, aH: $author$project$Main$view});
+	{eB: $author$project$Main$init, eO: $author$project$Messages$UrlChanged, eP: $author$project$Messages$LinkClicked, e8: $author$project$Main$subscriptions, fn: $author$project$Main$updateWithStorage, aH: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main($elm$json$Json$Decode$value)(0)}});}(this));
