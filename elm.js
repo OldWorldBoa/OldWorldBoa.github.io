@@ -5343,7 +5343,7 @@ var $author$project$Main$decoder = F2(
 			$elm$json$Json$Decode$succeed(
 				$author$project$UrlParser$fromUrl(url)),
 			$elm$json$Json$Decode$succeed(false),
-			A2($elm$json$Json$Decode$field, 'ctModel', $author$project$ContractionTimer$decoderCT));
+			A2($elm$json$Json$Decode$field, 'ct', $author$project$ContractionTimer$decoderCT));
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
