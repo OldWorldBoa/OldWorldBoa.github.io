@@ -8,6 +8,8 @@ import FontAwesome.Solid
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
+import Json.Decode as D exposing (andThen, list, succeed)
+import Json.Encode as E
 import List.Extra
 import Messages exposing (..)
 import OWBTheme exposing (..)
@@ -408,3 +410,30 @@ formatMillisTime millis =
     String.padLeft 2 '0' (String.fromInt minutes_only)
         ++ ":"
         ++ String.padLeft 2 '0' (String.fromInt second_only)
+
+
+encodeContraction : Contraction -> E.Value
+encodeContraction contraction =
+    E.object
+        [ ( "start", E.int (Time.posixToMillis contraction.start) )
+        , ( "end", E.int (Time.posixToMillis contraction.end) )
+        , ( "duration", E.int contraction.duration )
+        ]
+
+
+decoderCT : D.Decoder Model
+decoderCT =
+    D.map5 Model
+        (D.field "contractions" (list decoderContraction))
+        (succeed Nothing)
+        (succeed Time.utc)
+        (succeed Idle)
+        (succeed Graph)
+
+
+decoderContraction : D.Decoder Contraction
+decoderContraction =
+    D.map3 Contraction
+        (D.field "start" (D.int |> andThen (\val -> succeed (Time.millisToPosix val))))
+        (D.field "end" (D.int |> andThen (\val -> succeed (Time.millisToPosix val))))
+        (D.field "duration" D.int)

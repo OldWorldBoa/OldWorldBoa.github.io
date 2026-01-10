@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import About
 import Browser
@@ -11,6 +11,8 @@ import FontAwesome.Solid
 import Html.Events exposing (onClick)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, rel)
+import Json.Decode as D
+import Json.Encode as E
 import Messages exposing (Message(..))
 import OWBTheme exposing (desktop, faLink, initGlobalStyles, menuBtn, menuIconBtn, mobile, spacer, theme)
 import Portfolio
@@ -19,7 +21,7 @@ import Url
 import UrlParser exposing (Route(..))
 
 
-main : Program () Model Message
+main : Program E.Value Model Message
 main =
     Browser.application
         { init = init
@@ -40,14 +42,22 @@ type alias Model =
     }
 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Message )
-init _ url key =
-    ( Model
-        key
-        url
-        (UrlParser.fromUrl url)
-        False
-        (ContractionTimer.Model [] Nothing Time.utc ContractionTimer.Idle ContractionTimer.Graph)
+port setStorage : E.Value -> Cmd msg
+
+
+init : E.Value -> Url.Url -> Nav.Key -> ( Model, Cmd Message )
+init flags url key =
+    ( case D.decodeValue (decoder url key) flags of
+        Ok model ->
+            model
+
+        Err _ ->
+            Model
+                key
+                url
+                (UrlParser.fromUrl url)
+                False
+                (ContractionTimer.Model [] Nothing Time.utc ContractionTimer.Idle ContractionTimer.Graph)
     , Cmd.none
     )
 
@@ -92,6 +102,15 @@ update msg model =
 
     else
         ( model, Cmd.none )
+
+
+updateWithStorage : Message -> Model -> ( Model, Cmd Message )
+updateWithStorage msg model =
+    let
+        ( newModel, cmd ) =
+            update msg model
+    in
+    ( newModel, Cmd.batch [ setStorage (encode newModel), cmd ] )
 
 
 sendMessageToContractionTimer : Message -> Model -> ( Model, Cmd Message )
@@ -320,3 +339,29 @@ mobileNavStyle =
             [ boxShadow4 (px -1) (px 1) (px 4) (rgb 0 0 0) ]
         , mobile [ width (px 30), height (px 30) ]
         ]
+
+
+encode : Model -> E.Value
+encode model =
+    E.object
+        [ ( "ct"
+          , E.object
+                [ ( "contractions"
+                  , E.list
+                        (\a -> a)
+                        (List.map ContractionTimer.encodeContraction model.ctModel.contractions)
+                  )
+                ]
+          )
+        ]
+
+
+decoder : Url.Url -> Nav.Key -> D.Decoder Model
+decoder url key =
+    D.map5
+        Model
+        (D.succeed key)
+        (D.succeed url)
+        (D.succeed (UrlParser.fromUrl url))
+        (D.succeed False)
+        (D.field "ctModel" ContractionTimer.decoderCT)

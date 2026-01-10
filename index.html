@@ -7,10 +7,20 @@
     </head>
     <body>
 		<div id="app"></div>
-		<script>
-		var app = Elm.Main.init({
-		node: document.getElementById("app")
-		});
-		</script>
     </body>
+
+	<script>
+	var storedData = localStorage.getItem('owb');
+	var flags = storedData ? JSON.parse(storedDAta) : null;
+
+	var app = Elm.Main.init({
+	node: document.getElementById("app"),
+	flags: flags
+	});
+
+	app.ports.setStorage.subscribe(function(state) {
+		localStorage.setItem('owb', JSON.stringify(state));
+	});
+	</script>
+
 </html>
