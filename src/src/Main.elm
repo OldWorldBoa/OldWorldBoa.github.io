@@ -51,11 +51,7 @@ init flags url key =
         Ok model ->
             model
 
-        Err e ->
-            let
-                _ =
-                    Debug.log "err" e
-            in
+        Err _ ->
             Model
                 key
                 url
