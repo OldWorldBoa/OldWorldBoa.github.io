@@ -51,7 +51,11 @@ init flags url key =
         Ok model ->
             model
 
-        Err _ ->
+        Err e ->
+            let
+                _ =
+                    Debug.log "err" e
+            in
             Model
                 key
                 url
@@ -345,13 +349,7 @@ encode : Model -> E.Value
 encode model =
     E.object
         [ ( "ct"
-          , E.object
-                [ ( "contractions"
-                  , E.list
-                        (\a -> a)
-                        (List.map ContractionTimer.encodeContraction model.ctModel.contractions)
-                  )
-                ]
+          , ContractionTimer.encodeContractionTimer model.ctModel
           )
         ]
 
@@ -364,4 +362,4 @@ decoder url key =
         (D.succeed url)
         (D.succeed (UrlParser.fromUrl url))
         (D.succeed False)
-        (D.field "ct" ContractionTimer.decoderCT)
+        (D.field "ct" ContractionTimer.decodeContractionTimer)

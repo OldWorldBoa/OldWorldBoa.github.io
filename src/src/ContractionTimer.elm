@@ -412,6 +412,17 @@ formatMillisTime millis =
         ++ String.padLeft 2 '0' (String.fromInt second_only)
 
 
+encodeContractionTimer : Model -> E.Value
+encodeContractionTimer model =
+    E.object
+        [ ( "contractions"
+          , E.list
+                (\a -> a)
+                (List.map encodeContraction model.contractions)
+          )
+        ]
+
+
 encodeContraction : Contraction -> E.Value
 encodeContraction contraction =
     E.object
@@ -421,18 +432,18 @@ encodeContraction contraction =
         ]
 
 
-decoderCT : D.Decoder Model
-decoderCT =
+decodeContractionTimer : D.Decoder Model
+decodeContractionTimer =
     D.map5 Model
-        (D.field "contractions" (list decoderContraction))
+        (D.field "contractions" (list decodeContraction))
         (succeed Nothing)
         (succeed Time.utc)
         (succeed Idle)
         (succeed Graph)
 
 
-decoderContraction : D.Decoder Contraction
-decoderContraction =
+decodeContraction : D.Decoder Contraction
+decodeContraction =
     D.map3 Contraction
         (D.field "start" (D.int |> andThen (\val -> succeed (Time.millisToPosix val))))
         (D.field "end" (D.int |> andThen (\val -> succeed (Time.millisToPosix val))))
