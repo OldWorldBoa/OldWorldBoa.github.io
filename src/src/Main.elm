@@ -1,6 +1,7 @@
 port module Main exposing (..)
 
 import About
+import Array
 import Browser
 import Browser.Navigation as Nav
 import Contact
@@ -57,7 +58,7 @@ init flags url key =
                 url
                 (UrlParser.fromUrl url)
                 False
-                (ContractionTimer.Model [] Nothing Time.utc ContractionTimer.Idle ContractionTimer.Graph)
+                ContractionTimer.emptyModel
     , Cmd.none
     )
 
@@ -87,7 +88,7 @@ update msg model =
                     newUrl =
                         { url | path = url.path ++ path }
                 in
-                ( { model | route = UrlParser.fromUrl newUrl }
+                ( { model | route = UrlParser.fromUrl newUrl, mobileNav = False }
                 , Nav.pushUrl model.key (Url.toString newUrl)
                 )
 
