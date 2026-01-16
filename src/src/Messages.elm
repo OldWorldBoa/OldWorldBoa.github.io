@@ -10,7 +10,6 @@ type Message
     | UrlChanged Url.Url
     | ButtonNav String
     | ToggleMobileNav
-    | Pass
     | CT_Tick Time.Posix
     | CT_AdjustTimeZone Time.Zone
     | CT_InitTimer Time.Posix
@@ -18,11 +17,13 @@ type Message
     | CT_Stop
     | CT_ToggleView
     | CT_Delete Int
-    | CT_Add Int Int
-    | CT_Save Int Int Int
-    | CT_Edit Int
-    | CT_Cancel
     | CT_Reset
+    | CT_Add
+    | CT_Edit Int
+    | CT_Save
+    | CT_Cancel
+    | CT_ShadowEnd String
+    | CT_ShadowStart String
 
 
 forNavigation : Message -> Bool
@@ -68,19 +69,25 @@ forContractionTimer msg =
         CT_Delete _ ->
             True
 
-        CT_Add _ _ ->
+        CT_Reset ->
             True
 
-        CT_Save _ _ _ ->
-            True
-
-        CT_Cancel ->
+        CT_Add ->
             True
 
         CT_Edit _ ->
             True
 
-        CT_Reset ->
+        CT_Save ->
+            True
+
+        CT_Cancel ->
+            True
+
+        CT_ShadowEnd _ ->
+            True
+
+        CT_ShadowStart _ ->
             True
 
         _ ->

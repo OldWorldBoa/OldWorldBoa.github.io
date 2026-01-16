@@ -8,15 +8,17 @@ import Css exposing (..)
 import FontAwesome.Regular exposing (edit)
 import FontAwesome.Solid
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, placeholder, type_, value)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes exposing (css, type_, value)
+import Html.Styled.Events exposing (onClick, onInput)
 import Json.Decode as D exposing (andThen, array, succeed)
 import Json.Encode as E
+import List exposing (head, tail)
 import Messages exposing (..)
 import OWBTheme exposing (..)
+import String exposing (split)
 import Svg as S
 import Task
-import Time exposing (Month(..))
+import Time exposing (Month(..), Zone)
 
 
 type alias ContractionGraphed =
@@ -151,27 +153,20 @@ update msg model =
         CT_Reset ->
             ( { model | contractions = Array.empty }, Cmd.none )
 
-        CT_Add start end ->
-            ( { model
-                | view =
-                    Edit
-                        Nothing
-                        (newContraction (Time.millisToPosix start) (Time.millisToPosix end))
-              }
-            , Cmd.none
-            )
+        CT_Add ->
+            case model.now of
+                Just now ->
+                    ( { model
+                        | view =
+                            Edit
+                                Nothing
+                                (newContraction now now)
+                      }
+                    , Cmd.none
+                    )
 
-        CT_Save index start end ->
-            let
-                contractions =
-                    Array.push
-                        (newContraction (Time.millisToPosix start) (Time.millisToPosix end))
-                        (Array.append
-                            (slice 0 index model.contractions)
-                            (slice (index + 1) (Array.length model.contractions) model.contractions)
-                        )
-            in
-            ( { model | contractions = contractions }, Cmd.none )
+                Nothing ->
+                    ( model, Cmd.none )
 
         CT_Edit index ->
             case Array.get index model.contractions of
@@ -181,8 +176,80 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        CT_Save ->
+            let
+                contractions =
+                    case model.view of
+                        Edit idxMaybe contraction ->
+                            case idxMaybe of
+                                Just idx ->
+                                    Array.push
+                                        contraction
+                                        (Array.append
+                                            (slice 0 idx model.contractions)
+                                            (slice
+                                                (idx + 1)
+                                                (Array.length model.contractions)
+                                                model.contractions
+                                            )
+                                        )
+
+                                Nothing ->
+                                    Array.push contraction model.contractions
+
+                        _ ->
+                            model.contractions
+            in
+            ( { model | contractions = contractions, view = Table }, Cmd.none )
+
+        CT_ShadowStart start ->
+            let
+                newViewMaybe =
+                    case model.view of
+                        Edit idx contraction ->
+                            Just
+                                (Edit idx
+                                    (newContraction
+                                        (fromInputDateTime start)
+                                        contraction.end
+                                    )
+                                )
+
+                        _ ->
+                            Nothing
+            in
+            case newViewMaybe of
+                Just newView ->
+                    ( { model | view = newView }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        CT_ShadowEnd end ->
+            let
+                newViewMaybe =
+                    case model.view of
+                        Edit idx contraction ->
+                            Just
+                                (Edit idx
+                                    (newContraction
+                                        contraction.start
+                                        (fromInputDateTime end)
+                                    )
+                                )
+
+                        _ ->
+                            Nothing
+            in
+            case newViewMaybe of
+                Just newView ->
+                    ( { model | view = newView }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         CT_Cancel ->
-            ( { model | view = Graph }, Cmd.none )
+            ( { model | view = Table }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -325,17 +392,7 @@ contractionTable model =
                         [ th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ]
                             [ div [ css [ displayFlex, width (px 60), justifyContent spaceBetween ] ]
                                 [ faButton CT_Reset FontAwesome.Solid.arrowsRotate
-                                , faButton
-                                    (case model.now of
-                                        Just time ->
-                                            CT_Add
-                                                (Time.posixToMillis time)
-                                                (Time.posixToMillis time)
-
-                                        Nothing ->
-                                            Pass
-                                    )
-                                    FontAwesome.Solid.plus
+                                , faButton CT_Add FontAwesome.Solid.plus
                                 ]
                             ]
                         , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "Start" ]
@@ -360,10 +417,22 @@ contractionEdit model =
                     display none
     in
     case model.view of
-        Edit idx contraction ->
+        Edit _ contraction ->
             div [ css [ editDisplay ] ]
-                [ input [ type_ "date", placeholder "from", value "" ] []
-                , input [ type_ "date", placeholder "to", value "" ] []
+                [ input
+                    [ type_ "datetime-local"
+                    , value (toInputDateTime model.zone contraction.start)
+                    , onInput CT_ShadowStart
+                    ]
+                    []
+                , input
+                    [ type_ "datetime-local"
+                    , value (toInputDateTime model.zone contraction.end)
+                    , onInput CT_ShadowEnd
+                    ]
+                    []
+                , faButton CT_Save FontAwesome.Regular.save
+                , faButton CT_Cancel FontAwesome.Solid.ban
                 ]
 
         _ ->
@@ -383,7 +452,7 @@ createZonedRow zone index contraction =
                     ]
                 ]
                 [ faButton (CT_Delete index) FontAwesome.Regular.trashCan
-                , faButton (CT_Delete index) FontAwesome.Regular.edit
+                , faButton (CT_Edit index) FontAwesome.Regular.edit
                 ]
             ]
         , td [] [ text (toClock zone contraction.start) ]
@@ -564,6 +633,196 @@ toEnglishMonth month =
 
         Dec ->
             "Dec"
+
+
+toNumberMonth : Month -> String
+toNumberMonth month =
+    case month of
+        Jan ->
+            "01"
+
+        Feb ->
+            "02"
+
+        Mar ->
+            "03"
+
+        Apr ->
+            "04"
+
+        May ->
+            "05"
+
+        Jun ->
+            "06"
+
+        Jul ->
+            "07"
+
+        Aug ->
+            "08"
+
+        Sep ->
+            "09"
+
+        Oct ->
+            "10"
+
+        Nov ->
+            "11"
+
+        Dec ->
+            "12"
+
+
+toDateClock : Zone -> Time.Posix -> String
+toDateClock zone time =
+    toDate zone time ++ " " ++ toClock zone time
+
+
+toInputDateTime : Zone -> Time.Posix -> String
+toInputDateTime zone time =
+    let
+        day =
+            Time.toDay zone time
+
+        month =
+            Time.toMonth zone time
+
+        year =
+            Time.toYear zone time
+    in
+    String.fromInt year
+        ++ "-"
+        ++ toNumberMonth month
+        ++ "-"
+        ++ String.padLeft 2 '0' (String.fromInt day)
+        ++ "T"
+        ++ toClock zone time
+
+
+fromInputDateTime : String -> Time.Posix
+fromInputDateTime time =
+    let
+        datetime =
+            split "T" time
+
+        dateLst =
+            Maybe.map
+                (\dt -> List.map stringToInt (split "-" dt))
+                (head datetime)
+
+        timeLst =
+            Maybe.map
+                (\n ->
+                    Maybe.map
+                        (\tm -> List.map stringToInt (split ":" tm))
+                        (head n)
+                )
+                (tail datetime)
+
+        dateMillis =
+            case dateLst of
+                Just [ year, month, day ] ->
+                    (daysInYearSinceUnix year * 24 * 60 * 60 * 1000)
+                        + (daysBeforeMonth year month * 24 * 60 * 60 * 1000)
+                        + ((day - 1) * 24 * 60 * 60 * 1000)
+
+                _ ->
+                    0
+
+        timeMillis =
+            case timeLst of
+                Just inner ->
+                    case inner of
+                        Just [ hour, min, sec ] ->
+                            (hour * 60 * 60 * 1000)
+                                + (min * 60 * 1000)
+                                + (sec * 1000)
+
+                        _ ->
+                            0
+
+                _ ->
+                    0
+    in
+    Time.millisToPosix (dateMillis + timeMillis)
+
+
+stringToInt : String -> Int
+stringToInt string =
+    case String.toInt string of
+        Just int ->
+            int
+
+        Nothing ->
+            0
+
+
+daysInYearSinceUnix : Int -> Int
+daysInYearSinceUnix year =
+    let
+        yearsTot =
+            year - 1970
+
+        leapYears =
+            floor (toFloat (yearsTot + 2) / 4)
+
+        years =
+            yearsTot - leapYears
+    in
+    (years * 365) + (leapYears * 366)
+
+
+daysBeforeMonth : Int -> Int -> Int
+daysBeforeMonth year month =
+    let
+        feb =
+            if modBy year 4 == 0 then
+                29
+
+            else
+                28
+    in
+    case month of
+        1 ->
+            0
+
+        2 ->
+            31
+
+        3 ->
+            31 + feb
+
+        4 ->
+            31 + feb + 31
+
+        5 ->
+            31 + feb + 31 + 30
+
+        6 ->
+            31 + feb + 31 + 30 + 31
+
+        7 ->
+            31 + feb + 31 + 30 + 31 + 30
+
+        8 ->
+            31 + feb + 31 + 30 + 31 + 30 + 31
+
+        9 ->
+            31 + feb + 31 + 30 + 31 + 30 + 31 + 31
+
+        10 ->
+            31 + feb + 31 + 30 + 31 + 30 + 31 + 31 + 30
+
+        11 ->
+            31 + feb + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31
+
+        12 ->
+            31 + feb + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30
+
+        _ ->
+            0
 
 
 formatMillisTime : Int -> String
