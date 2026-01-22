@@ -189,10 +189,10 @@ btn attributes contents =
         contents
 
 
-faButton : Message -> Icon Icon.WithoutId -> Html Message
-faButton msg icon =
+faButton : Color -> Message -> Icon Icon.WithoutId -> Html Message
+faButton clr msg icon =
     div
-        [ css [ width (px 25), cursor pointer ], onClick msg ]
+        [ css [ width (px 25), cursor pointer, color clr ], onClick msg ]
         [ Html.Styled.fromUnstyled (Icon.view icon) ]
 
 

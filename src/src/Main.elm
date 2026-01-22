@@ -65,30 +65,34 @@ init flags url key =
 
 update : Message -> Model -> ( Model, Cmd Message )
 update msg model =
+    let
+        newModel =
+            { model | mobileNav = False }
+    in
     if Messages.forNavigation msg then
         case msg of
             LinkClicked urlRequested ->
                 case urlRequested of
                     Browser.Internal url ->
-                        ( { model | route = UrlParser.fromUrl url }
+                        ( { newModel | route = UrlParser.fromUrl url }
                         , Nav.pushUrl model.key (Url.toString url)
                         )
 
                     Browser.External href ->
-                        ( model, Nav.load href )
+                        ( newModel, Nav.load href )
 
             UrlChanged url ->
-                ( { model | url = url, route = UrlParser.fromUrl url }, Cmd.none )
+                ( { newModel | url = url, route = UrlParser.fromUrl url }, Cmd.none )
 
             ButtonNav path ->
                 let
                     url =
-                        model.url
+                        newModel.url
 
                     newUrl =
                         { url | path = url.path ++ path }
                 in
-                ( { model | route = UrlParser.fromUrl newUrl, mobileNav = False }
+                ( { newModel | route = UrlParser.fromUrl newUrl, mobileNav = False }
                 , Nav.pushUrl model.key (Url.toString newUrl)
                 )
 
@@ -96,13 +100,18 @@ update msg model =
                 ( { model | mobileNav = not model.mobileNav }, Cmd.none )
 
             _ ->
-                ( model, Cmd.none )
+                ( newModel, Cmd.none )
 
     else if Messages.forContractionTimer msg then
-        sendMessageToContractionTimer msg model
+        case msg of
+            CT_Tick _ ->
+                sendMessageToContractionTimer msg model
+
+            _ ->
+                sendMessageToContractionTimer msg newModel
 
     else
-        ( model, Cmd.none )
+        ( newModel, Cmd.none )
 
 
 updateWithStorage : Message -> Model -> ( Model, Cmd Message )

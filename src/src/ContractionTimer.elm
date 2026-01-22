@@ -138,7 +138,7 @@ update msg model =
                     ( { model | view = Table }, Cmd.none )
 
                 Edit _ _ ->
-                    ( model, Cmd.none )
+                    ( { model | view = Graph }, Cmd.none )
 
         CT_Delete index ->
             ( { model
@@ -282,7 +282,8 @@ view model =
                 , br [] []
                 , div [ css [ displayFlex, justifyContent center, alignItems end ] ]
                     [ recordButton model
-                    , faButton CT_ToggleView
+                    , faButton theme.text
+                        CT_ToggleView
                         (if model.view == Graph then
                             edit
 
@@ -391,8 +392,8 @@ contractionTable model =
                     [ tr [ css [ width (pct 100) ] ]
                         [ th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ]
                             [ div [ css [ displayFlex, width (px 60), justifyContent spaceBetween ] ]
-                                [ faButton CT_Reset FontAwesome.Solid.arrowsRotate
-                                , faButton CT_Add FontAwesome.Solid.plus
+                                [ faButton theme.text CT_Reset FontAwesome.Solid.arrowsRotate
+                                , faButton theme.text CT_Add FontAwesome.Solid.plus
                                 ]
                             ]
                         , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "Start" ]
@@ -419,20 +420,32 @@ contractionEdit model =
     case model.view of
         Edit _ contraction ->
             div [ css [ editDisplay ] ]
-                [ input
-                    [ type_ "datetime-local"
-                    , value (toInputDateTime model.zone contraction.start)
-                    , onInput CT_ShadowStart
+                [ div [ css [ textAlign left, maxWidth fitContent, margin auto ] ]
+                    [ label [] [ text "Contraction Start" ]
+                    , br [] []
+                    , input
+                        [ type_ "datetime-local"
+                        , value (toInputDateTime model.zone contraction.start)
+                        , onInput CT_ShadowStart
+                        ]
+                        []
+                    , br [] []
+                    , br [] []
+                    , label [] [ text "Contraction End" ]
+                    , br [] []
+                    , input
+                        [ type_ "datetime-local"
+                        , value (toInputDateTime model.zone contraction.end)
+                        , onInput CT_ShadowEnd
+                        ]
+                        []
+                    , br [] []
+                    , br [] []
+                    , div [ css [ displayFlex, justifyContent spaceBetween ] ]
+                        [ faButton theme.secondary CT_Cancel FontAwesome.Solid.ban
+                        , faButton theme.primary CT_Save FontAwesome.Regular.save
+                        ]
                     ]
-                    []
-                , input
-                    [ type_ "datetime-local"
-                    , value (toInputDateTime model.zone contraction.end)
-                    , onInput CT_ShadowEnd
-                    ]
-                    []
-                , faButton CT_Save FontAwesome.Regular.save
-                , faButton CT_Cancel FontAwesome.Solid.ban
                 ]
 
         _ ->
@@ -451,8 +464,8 @@ createZonedRow zone index contraction =
                     , margin auto
                     ]
                 ]
-                [ faButton (CT_Delete index) FontAwesome.Regular.trashCan
-                , faButton (CT_Edit index) FontAwesome.Regular.edit
+                [ faButton theme.text (CT_Delete index) FontAwesome.Regular.trashCan
+                , faButton theme.text (CT_Edit index) FontAwesome.Regular.edit
                 ]
             ]
         , td [] [ text (toClock zone contraction.start) ]
