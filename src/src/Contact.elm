@@ -1,6 +1,6 @@
 module Contact exposing (..)
 
-import Css exposing (LengthOrAuto, center, color, displayFlex, height, justifyContent, margin, px, spaceAround, spaceBetween, textAlign, visited, width)
+import Css exposing (LengthOrAuto, center, color, displayFlex, height, justifyContent, margin, px, spaceAround, textAlign, visited, width)
 import FontAwesome as Icon
 import FontAwesome.Brands
 import Html.Styled exposing (..)

@@ -24,6 +24,7 @@ type Message
     | CT_Cancel
     | CT_ShadowEnd String
     | CT_ShadowStart String
+    | CT_ConfirmReset
 
 
 forNavigation : Message -> Bool
@@ -88,6 +89,9 @@ forContractionTimer msg =
             True
 
         CT_ShadowStart _ ->
+            True
+
+        CT_ConfirmReset ->
             True
 
         _ ->

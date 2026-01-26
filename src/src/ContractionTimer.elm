@@ -8,7 +8,7 @@ import Css exposing (..)
 import FontAwesome.Regular exposing (edit)
 import FontAwesome.Solid
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, type_, value)
+import Html.Styled.Attributes exposing (css, href, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Json.Decode as D exposing (andThen, array, succeed)
 import Json.Encode as E
@@ -77,6 +77,7 @@ type ModelView
     = Graph
     | Table
     | Edit (Maybe Int) Contraction
+    | Confirm
 
 
 init : () -> ( Model, Cmd Message )
@@ -140,6 +141,9 @@ update msg model =
                 Edit _ _ ->
                     ( { model | view = Graph }, Cmd.none )
 
+                Confirm ->
+                    ( { model | view = Graph }, Cmd.none )
+
         CT_Delete index ->
             ( { model
                 | contractions =
@@ -149,6 +153,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        CT_ConfirmReset ->
+            ( { model | view = Confirm }, Cmd.none )
 
         CT_Reset ->
             ( { model | contractions = Array.empty }, Cmd.none )
@@ -279,6 +286,7 @@ view model =
                 , contractionGraph model
                 , contractionTable model
                 , contractionEdit model
+                , deleteConfirm model
                 , br [] []
                 , div [ css [ displayFlex, justifyContent center, alignItems end ] ]
                     [ recordButton model
@@ -392,7 +400,7 @@ contractionTable model =
                     [ tr [ css [ width (pct 100) ] ]
                         [ th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ]
                             [ div [ css [ displayFlex, width (px 60), justifyContent spaceBetween ] ]
-                                [ faButton theme.text CT_Reset FontAwesome.Solid.arrowsRotate
+                                [ faButton theme.text CT_ConfirmReset FontAwesome.Solid.arrowsRotate
                                 , faButton theme.text CT_Add FontAwesome.Solid.plus
                                 ]
                             ]
@@ -450,6 +458,30 @@ contractionEdit model =
 
         _ ->
             div [] []
+
+
+deleteConfirm : Model -> Html.Styled.Html Message
+deleteConfirm model =
+    let
+        deleteConfirmDisplay =
+            case model.view of
+                Confirm ->
+                    display block
+
+                _ ->
+                    display none
+    in
+    div [ css [ deleteConfirmDisplay ] ]
+        [ div [ css [ textAlign left, maxWidth fitContent, margin auto ] ]
+            [ text "Are you sure you want to delete all contractions?"
+            , br [] []
+            , br [] []
+            , div [ css [ displayFlex, justifyContent spaceAround ] ]
+                [ faButton theme.secondary CT_Cancel FontAwesome.Solid.ban
+                , faButton theme.primary CT_Reset FontAwesome.Regular.save
+                ]
+            ]
+        ]
 
 
 createZonedRow : Time.Zone -> Int -> Contraction -> Html.Styled.Html Message
@@ -521,7 +553,12 @@ createStatsRow : Time.Posix -> Array Contraction -> Html.Styled.Html Message
 createStatsRow now contractions =
     let
         targetContractions =
-            Array.filter (inPeriod now) contractions
+            Array.fromList <|
+                List.sortBy
+                    getEndMillis
+                    (Array.toList
+                        (Array.filter (inPeriod now) contractions)
+                    )
 
         firstContractions =
             Array.toList <| slice 0 (Array.length targetContractions - 1) targetContractions
@@ -529,37 +566,121 @@ createStatsRow now contractions =
         nextContractions =
             Array.toList <| slice 1 (Array.length targetContractions) targetContractions
 
+        head =
+            let
+                maybeHead =
+                    Array.get 0 targetContractions
+            in
+            case maybeHead of
+                Just justHead ->
+                    Time.posixToMillis justHead.end
+
+                Nothing ->
+                    0
+
+        tail =
+            let
+                maybeTail =
+                    Array.get (Array.length targetContractions - 1) targetContractions
+            in
+            case maybeTail of
+                Just justTail ->
+                    Time.posixToMillis justTail.end
+
+                Nothing ->
+                    0
+
         total =
             Array.length targetContractions
 
-        intervalSum =
-            List.sum
-                (List.map2 (-)
-                    (List.map getEndMillis (List.reverse firstContractions))
-                    (List.map getEndMillis nextContractions)
+        ( totalTimeMin, _ ) =
+            millisToMinSec (tail - head)
+
+        totalTimeHr =
+            roundToFigures 1 (toFloat totalTimeMin / 60.0)
+
+        ( avgIntervalMin, avgIntervalSec ) =
+            millisToMinSec
+                (abs
+                    (List.sum
+                        (List.map2 (-)
+                            (List.map getEndMillis firstContractions)
+                            (List.map getEndMillis nextContractions)
+                        )
+                    )
+                    // (total - 1)
                 )
 
-        durationSum =
-            List.sum <| Array.toList <| Array.map getDuration targetContractions
+        avgIntervalMinAccu =
+            roundToFigures 1 (toFloat avgIntervalMin + (toFloat avgIntervalSec / 60.0))
+
+        ( durationMin, durationSec ) =
+            millisToMinSec
+                ((List.sum <|
+                    Array.toList <|
+                        Array.map getDuration targetContractions
+                 )
+                    // total
+                )
+
+        durationMinAccu =
+            roundToFigures 1 (toFloat durationMin + (toFloat durationSec / 60.0))
+
+        stage =
+            if
+                Basics.round avgIntervalMinAccu
+                    == 5
+                    && Basics.round durationMinAccu
+                    == 1
+                    && Basics.round totalTimeHr
+                    == 1
+            then
+                "Active"
+
+            else
+                "Latent"
     in
-    Html.Styled.table
-        [ css [ width (pct 100), maxWidth (px 650), margin auto ]
-        ]
-        [ tr []
-            [ td []
-                [ text "Period: 1hr"
+    div []
+        [ text
+            (stage
+                ++ " | Every "
+                ++ String.fromFloat avgIntervalMinAccu
+                ++ "m lasting "
+                ++ String.fromFloat durationMinAccu
+                ++ "m over "
+                ++ String.fromFloat totalTimeHr
+                ++ "hr"
+            )
+        , sup []
+            [ text " "
+            , OWBTheme.link
+                [ Html.Styled.Attributes.target "_blank"
+                , href "https://biologyinsights.com/what-is-the-511-rule-in-pregnancy/"
                 ]
-            , td []
-                [ text ("Total: " ++ String.fromInt total)
-                ]
-            , td []
-                [ text ("Avg. Interval (s): " ++ String.fromInt (intervalSum // total // 1000))
-                ]
-            , td []
-                [ text ("Avg. Duration (s): " ++ String.fromInt (durationSum // total // 1000))
-                ]
+                [ text "511?" ]
             ]
         ]
+
+
+roundToFigures : Int -> Float -> Float
+roundToFigures figures num =
+    let
+        factor =
+            10.0 ^ toFloat figures
+    in
+    toFloat (Basics.round (num * factor)) / factor
+
+
+millisToMinSec : Int -> ( Int, Int )
+millisToMinSec millis =
+    let
+        min =
+            millis // 1000 // 60
+
+        sec =
+            (millis // 1000) - (min * 60)
+    in
+    ( min, sec )
 
 
 inPeriod : Time.Posix -> Contraction -> Bool
@@ -752,6 +873,13 @@ fromInputDateTime time =
                             (hour * 60 * 60 * 1000)
                                 + (min * 60 * 1000)
                                 + (sec * 1000)
+
+                        Just [ hour, min ] ->
+                            (hour * 60 * 60 * 1000)
+                                + (min * 60 * 1000)
+
+                        Just [ hour ] ->
+                            hour * 60 * 60 * 1000
 
                         _ ->
                             0
