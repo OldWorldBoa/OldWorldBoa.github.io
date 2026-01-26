@@ -638,22 +638,37 @@ createStatsRow now contractions =
                     && totalTimeHr
                     >= 0.9
             then
-                "Active"
+                div
+                    [ css
+                        [ display inlineBlock
+                        , marginRight (px 5)
+                        , color theme.primary
+                        ]
+                    ]
+                    [ text "Active" ]
 
             else
-                "Latent"
+                div
+                    [ css
+                        [ display inlineBlock
+                        , marginRight (px 5)
+                        ]
+                    ]
+                    [ text "Latent" ]
     in
     div []
-        [ text
-            (stage
-                ++ " | Every "
-                ++ String.fromFloat avgIntervalMinAccu
-                ++ "m lasting "
-                ++ String.fromFloat durationMinAccu
-                ++ "m over "
-                ++ String.fromFloat totalTimeHr
-                ++ "hr"
-            )
+        [ stage
+        , div [ css [ display inlineBlock ] ]
+            [ text
+                (" | Every "
+                    ++ String.fromFloat avgIntervalMinAccu
+                    ++ "m lasting "
+                    ++ String.fromFloat durationMinAccu
+                    ++ "m over "
+                    ++ String.fromFloat totalTimeHr
+                    ++ "hr"
+                )
+            ]
         , sup []
             [ text " "
             , OWBTheme.link
