@@ -19053,7 +19053,7 @@ var $author$project$ContractionTimer$createStatsRow = F2(
 		var avgIntervalMin = _v2.a;
 		var avgIntervalSec = _v2.b;
 		var avgIntervalMinAccu = A2($author$project$ContractionTimer$roundToFigures, 1, avgIntervalMin + (avgIntervalSec / 60.0));
-		var stage = (($elm$core$Basics$round(avgIntervalMinAccu) === 5) && (($elm$core$Basics$round(durationMinAccu) === 1) && ($elm$core$Basics$round(totalTimeHr) === 1))) ? 'Active' : 'Latent';
+		var stage = (((avgIntervalMinAccu >= 4.9) && (avgIntervalMinAccu <= 5.1)) && ((durationMinAccu >= 0.9) && (totalTimeHr >= 0.9))) ? 'Active' : 'Latent';
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$div,
 			_List_Nil,

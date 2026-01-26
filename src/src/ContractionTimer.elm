@@ -628,8 +628,11 @@ createStatsRow now contractions =
 
         stage =
             if
-                avgIntervalMinAccu
+                (avgIntervalMinAccu
                     >= 4.9
+                    && avgIntervalMinAccu
+                    <= 5.1
+                )
                     && durationMinAccu
                     >= 0.9
                     && totalTimeHr
