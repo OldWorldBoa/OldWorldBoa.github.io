@@ -628,12 +628,12 @@ createStatsRow now contractions =
 
         stage =
             if
-                Basics.round avgIntervalMinAccu
-                    == 5
-                    && Basics.round durationMinAccu
-                    == 1
-                    && Basics.round totalTimeHr
-                    == 1
+                avgIntervalMinAccu
+                    >= 4.9
+                    && durationMinAccu
+                    >= 0.9
+                    && totalTimeHr
+                    >= 0.9
             then
                 "Active"
 
