@@ -2,13 +2,13 @@ module ContractionTimer exposing (..)
 
 import Array exposing (Array, append, slice)
 import Bytes exposing (Bytes, Endianness)
-import Bytes.Encode as Encode exposing (encode, sequence, string)
+import Bytes.Encode as Encode exposing (sequence, string)
 import Chart as C
 import Chart.Attributes as CA
 import Chart.Item as CI
 import Css exposing (..)
 import File.Download as Download
-import FontAwesome.Regular exposing (edit)
+import FontAwesome.Regular
 import FontAwesome.Solid
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, type_, value)
@@ -20,6 +20,7 @@ import Messages exposing (..)
 import OWBTheme exposing (..)
 import String exposing (split)
 import Svg as S
+import Svg.Attributes exposing (mode)
 import Task
 import Time exposing (Month(..), Zone)
 
@@ -63,13 +64,14 @@ type alias Model =
     , zone : Time.Zone
     , endianness : Maybe Endianness
     , task : ModelTask
-    , view : ModelView
+    , showTable : Bool
+    , modalView : ModalView
     }
 
 
 emptyModel : Model
 emptyModel =
-    Model Array.empty Nothing Time.utc Nothing Idle Graph
+    Model Array.empty Nothing Time.utc Nothing Idle False None
 
 
 type ModelTask
@@ -77,11 +79,10 @@ type ModelTask
     | Idle
 
 
-type ModelView
-    = Graph
-    | Table
-    | Edit (Maybe Int) Contraction
+type ModalView
+    = Edit (Maybe Int) Contraction
     | Confirm
+    | None
 
 
 init : () -> ( Model, Cmd Message )
@@ -142,20 +143,6 @@ update msg model =
             in
             ( { model | task = Idle, contractions = contractions }, Cmd.none )
 
-        CT_ToggleView ->
-            case model.view of
-                Table ->
-                    ( { model | view = Graph }, Cmd.none )
-
-                Graph ->
-                    ( { model | view = Table }, Cmd.none )
-
-                Edit _ _ ->
-                    ( { model | view = Graph }, Cmd.none )
-
-                Confirm ->
-                    ( { model | view = Graph }, Cmd.none )
-
         CT_Delete index ->
             ( { model
                 | contractions =
@@ -167,16 +154,16 @@ update msg model =
             )
 
         CT_ConfirmReset ->
-            ( { model | view = Confirm }, Cmd.none )
+            ( { model | modalView = Confirm }, Cmd.none )
 
         CT_Reset ->
-            ( { model | contractions = Array.empty }, Cmd.none )
+            ( { model | contractions = Array.empty, modalView = None }, Cmd.none )
 
         CT_Add ->
             case model.now of
                 Just now ->
                     ( { model
-                        | view =
+                        | modalView =
                             Edit
                                 Nothing
                                 (newContraction now now)
@@ -190,7 +177,7 @@ update msg model =
         CT_Edit index ->
             case Array.get index model.contractions of
                 Just contraction ->
-                    ( { model | view = Edit (Just index) contraction }, Cmd.none )
+                    ( { model | modalView = Edit (Just index) contraction }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -198,7 +185,7 @@ update msg model =
         CT_Save ->
             let
                 contractions =
-                    case model.view of
+                    case model.modalView of
                         Edit idxMaybe contraction ->
                             case idxMaybe of
                                 Just idx ->
@@ -219,12 +206,12 @@ update msg model =
                         _ ->
                             model.contractions
             in
-            ( { model | contractions = contractions, view = Table }, Cmd.none )
+            ( { model | contractions = contractions, modalView = None }, Cmd.none )
 
         CT_ShadowStart start ->
             let
                 newViewMaybe =
-                    case model.view of
+                    case model.modalView of
                         Edit idx contraction ->
                             Just
                                 (Edit idx
@@ -239,15 +226,18 @@ update msg model =
             in
             case newViewMaybe of
                 Just newView ->
-                    ( { model | view = newView }, Cmd.none )
+                    ( { model | modalView = newView }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
+        CT_ToggleCTList ->
+            ( { model | showTable = not model.showTable }, Cmd.none )
+
         CT_ShadowEnd end ->
             let
                 newViewMaybe =
-                    case model.view of
+                    case model.modalView of
                         Edit idx contraction ->
                             Just
                                 (Edit idx
@@ -262,7 +252,7 @@ update msg model =
             in
             case newViewMaybe of
                 Just newView ->
-                    ( { model | view = newView }, Cmd.none )
+                    ( { model | modalView = newView }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -271,7 +261,7 @@ update msg model =
             ( model, Download.bytes "contractions.csv" "text/csv" (getCsvData model) )
 
         CT_Cancel ->
-            ( { model | view = Table }, Cmd.none )
+            ( { model | modalView = None }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -299,21 +289,12 @@ view model =
                 [ statsRow
                 , hr [] []
                 , contractionGraph model
-                , contractionTable model
-                , contractionEdit model
-                , deleteConfirm model
                 , br [] []
-                , div [ css [ displayFlex, justifyContent center, alignItems end ] ]
+                , div [ css [ displayFlex, justifyContent spaceAround, alignItems start ] ]
                     [ recordButton model
-                    , faButton theme.text
-                        CT_ToggleView
-                        (if model.view == Graph then
-                            edit
-
-                         else
-                            FontAwesome.Solid.table
-                        )
+                    , contractionTable model
                     ]
+                , modal model
                 ]
     in
     ( "Contraction Timer", body )
@@ -321,16 +302,7 @@ view model =
 
 contractionGraph : Model -> Html Message
 contractionGraph model =
-    let
-        graphDisplay =
-            case model.view of
-                Graph ->
-                    display block
-
-                _ ->
-                    display none
-    in
-    div [ css [ maxWidth (px 650), margin auto, graphDisplay ] ]
+    div [ css [ maxWidth (px 650), margin auto ] ]
         [ Html.Styled.fromUnstyled
             (C.chart
                 [ CA.height 150
@@ -418,38 +390,95 @@ bytesEncodeContraction zone contraction =
 contractionTable : Model -> Html Message
 contractionTable model =
     let
+        total =
+            Array.length model.contractions
+
         tableDisplay =
-            case model.view of
-                Table ->
-                    display block
+            if model.showTable then
+                display block
+
+            else
+                display none
+
+        toggleButton =
+            if not model.showTable then
+                faButton theme.text CT_ToggleCTList FontAwesome.Regular.squareCaretDown
+
+            else
+                faButton theme.text CT_ToggleCTList FontAwesome.Regular.squareCaretUp
+    in
+    div [ css [ displayFlex, justifyContent center, flexDirection column ] ]
+        [ div [ css [ displayFlex, justifyContent center, alignItems center ] ]
+            [ toggleButton
+            , div [ css [ width (px 5) ] ] []
+            , text ("Contractions (" ++ String.fromInt total ++ ")")
+            ]
+        , div
+            [ css [ tableDisplay ] ]
+            [ Html.Styled.table
+                []
+                (List.append
+                    (List.indexedMap
+                        (createZonedRow model.zone)
+                        (Array.toList model.contractions)
+                    )
+                    [ thead []
+                        [ tr [ css [ width (pct 100) ] ]
+                            [ th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ]
+                                [ div [ css [ displayFlex, width (px 60), justifyContent spaceBetween ] ]
+                                    [ faButton theme.text CT_ConfirmReset FontAwesome.Solid.arrowsRotate
+                                    , faButton theme.text CT_Add FontAwesome.Solid.plus
+                                    , faButton theme.text CT_DownloadContractions FontAwesome.Solid.download
+                                    ]
+                                ]
+                            , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "Start" ]
+                            , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "End" ]
+                            , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "Sec." ]
+                            ]
+                        ]
+                    ]
+                )
+            ]
+        ]
+
+
+modal : Model -> Html.Styled.Html Message
+modal model =
+    let
+        modalDisplay =
+            case model.modalView of
+                Edit _ _ ->
+                    displayFlex
+
+                Confirm ->
+                    displayFlex
 
                 _ ->
                     display none
     in
-    div [ css [ displayFlex, justifyContent center ] ]
-        [ Html.Styled.table
-            [ css [ tableDisplay ] ]
-            (List.append
-                (List.indexedMap
-                    (createZonedRow model.zone)
-                    (Array.toList model.contractions)
-                )
-                [ thead []
-                    [ tr [ css [ width (pct 100) ] ]
-                        [ th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ]
-                            [ div [ css [ displayFlex, width (px 60), justifyContent spaceBetween ] ]
-                                [ faButton theme.text CT_ConfirmReset FontAwesome.Solid.arrowsRotate
-                                , faButton theme.text CT_Add FontAwesome.Solid.plus
-                                , faButton theme.text CT_DownloadContractions FontAwesome.Solid.download
-                                ]
-                            ]
-                        , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "Start" ]
-                        , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "End" ]
-                        , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "Sec." ]
-                        ]
-                    ]
+    div
+        [ css
+            [ modalDisplay
+            , position absolute
+            , top (px 0)
+            , left (px 0)
+            , height (pct 100)
+            , width (pct 100)
+            , backgroundColor (rgba 1 1 1 0.5)
+            ]
+        ]
+        [ div
+            [ css
+                [ backgroundColor theme.background
+                , maxWidth fitContent
+                , margin auto
+                , padding (px 25)
+                , borderRadius (px 6)
                 ]
-            )
+            ]
+            [ contractionEdit model
+            , deleteConfirm model
+            ]
         ]
 
 
@@ -457,14 +486,14 @@ contractionEdit : Model -> Html.Styled.Html Message
 contractionEdit model =
     let
         editDisplay =
-            case model.view of
+            case model.modalView of
                 Edit _ _ ->
                     display block
 
                 _ ->
                     display none
     in
-    case model.view of
+    case model.modalView of
         Edit _ contraction ->
             div [ css [ editDisplay ] ]
                 [ div [ css [ textAlign left, maxWidth fitContent, margin auto ] ]
@@ -503,7 +532,7 @@ deleteConfirm : Model -> Html.Styled.Html Message
 deleteConfirm model =
     let
         deleteConfirmDisplay =
-            case model.view of
+            case model.modalView of
                 Confirm ->
                     display block
 
@@ -1065,13 +1094,14 @@ encodeContraction contraction =
 
 decodeContractionTimer : D.Decoder Model
 decodeContractionTimer =
-    D.map6 Model
+    D.map7 Model
         (D.field "contractions" (array decodeContraction))
         (succeed Nothing)
         (succeed Time.utc)
         (succeed Nothing)
         (succeed Idle)
-        (succeed Graph)
+        (succeed False)
+        (succeed None)
 
 
 decodeContraction : D.Decoder Contraction
