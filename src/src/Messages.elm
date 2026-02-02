@@ -1,6 +1,7 @@
 module Messages exposing (..)
 
 import Browser
+import Bytes
 import Time
 import Url
 
@@ -12,6 +13,8 @@ type Message
     | ToggleMobileNav
     | CT_Tick Time.Posix
     | CT_AdjustTimeZone Time.Zone
+    | CT_AdjustEndianness Bytes.Endianness
+    | CT_DownloadContractions
     | CT_InitTimer Time.Posix
     | CT_Start
     | CT_Stop
@@ -50,6 +53,12 @@ forContractionTimer : Message -> Bool
 forContractionTimer msg =
     case msg of
         CT_AdjustTimeZone _ ->
+            True
+
+        CT_AdjustEndianness _ ->
+            True
+
+        CT_DownloadContractions ->
             True
 
         CT_InitTimer _ ->

@@ -1,10 +1,13 @@
 module ContractionTimer exposing (..)
 
 import Array exposing (Array, append, slice)
+import Bytes exposing (Bytes, Endianness)
+import Bytes.Encode as Encode exposing (encode, sequence, string)
 import Chart as C
 import Chart.Attributes as CA
 import Chart.Item as CI
 import Css exposing (..)
+import File.Download as Download
 import FontAwesome.Regular exposing (edit)
 import FontAwesome.Solid
 import Html.Styled exposing (..)
@@ -58,6 +61,7 @@ type alias Model =
     { contractions : Array Contraction
     , now : Maybe Time.Posix
     , zone : Time.Zone
+    , endianness : Maybe Endianness
     , task : ModelTask
     , view : ModelView
     }
@@ -65,7 +69,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    Model Array.empty Nothing Time.utc Idle Graph
+    Model Array.empty Nothing Time.utc Nothing Idle Graph
 
 
 type ModelTask
@@ -82,7 +86,12 @@ type ModelView
 
 init : () -> ( Model, Cmd Message )
 init _ =
-    ( emptyModel, Task.perform CT_AdjustTimeZone Time.here )
+    ( emptyModel
+    , Cmd.batch
+        [ Task.perform CT_AdjustTimeZone Time.here
+        , Task.perform CT_AdjustEndianness Bytes.getHostEndianness
+        ]
+    )
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -102,6 +111,9 @@ update msg model =
 
         CT_AdjustTimeZone zone ->
             ( { model | zone = zone }, Cmd.none )
+
+        CT_AdjustEndianness endianness ->
+            ( { model | endianness = Just endianness }, Cmd.none )
 
         CT_InitTimer time ->
             ( { model | task = Timer (newContraction time time) }
@@ -255,6 +267,9 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        CT_DownloadContractions ->
+            ( model, Download.bytes "contractions.csv" "text/csv" (getCsvData model) )
+
         CT_Cancel ->
             ( { model | view = Table }, Cmd.none )
 
@@ -263,7 +278,7 @@ update msg model =
 
 
 subscriptions : Model -> Sub Message
-subscriptions model =
+subscriptions _ =
     Time.every 1000 CT_Tick
 
 
@@ -377,6 +392,29 @@ getGraphData model =
             []
 
 
+getCsvData : Model -> Bytes
+getCsvData model =
+    let
+        contractionArray =
+            Array.toList (Array.map (bytesEncodeContraction model.zone) model.contractions)
+    in
+    Encode.encode
+        (sequence
+            (string "Start,End,Duration(ms)\n"
+                :: contractionArray
+            )
+        )
+
+
+bytesEncodeContraction : Zone -> Contraction -> Encode.Encoder
+bytesEncodeContraction zone contraction =
+    sequence
+        [ string (toDateClock zone contraction.start ++ ",")
+        , string (toDateClock zone contraction.end ++ ",")
+        , string (String.fromInt contraction.duration ++ "\n")
+        ]
+
+
 contractionTable : Model -> Html Message
 contractionTable model =
     let
@@ -402,6 +440,7 @@ contractionTable model =
                             [ div [ css [ displayFlex, width (px 60), justifyContent spaceBetween ] ]
                                 [ faButton theme.text CT_ConfirmReset FontAwesome.Solid.arrowsRotate
                                 , faButton theme.text CT_Add FontAwesome.Solid.plus
+                                , faButton theme.text CT_DownloadContractions FontAwesome.Solid.download
                                 ]
                             ]
                         , th [ css [ paddingRight (px 20), paddingLeft (px 20) ] ] [ text "Start" ]
@@ -1026,10 +1065,11 @@ encodeContraction contraction =
 
 decodeContractionTimer : D.Decoder Model
 decodeContractionTimer =
-    D.map5 Model
+    D.map6 Model
         (D.field "contractions" (array decodeContraction))
         (succeed Nothing)
         (succeed Time.utc)
+        (succeed Nothing)
         (succeed Idle)
         (succeed Graph)
 
