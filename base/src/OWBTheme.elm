@@ -4,13 +4,9 @@ import Css exposing (..)
 import Css.Global exposing (body, global, html)
 import Css.Media exposing (only, screen, withMedia)
 import Css.Transitions exposing (transition)
-import FontAwesome as Icon exposing (Icon)
-import FontAwesome.Regular as Icon
-import FontAwesome.Styles as Icon
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src)
+import Html.Styled.Attributes exposing (class, css, href, src)
 import Html.Styled.Events exposing (onClick)
-import Messages exposing (Message)
 
 
 theme :
@@ -93,7 +89,7 @@ menuBtn attributes contents =
         contents
 
 
-menuIconBtn : List (Attribute Message) -> String -> Html Message
+menuIconBtn : List (Attribute msg) -> String -> Html msg
 menuIconBtn attributes iconPath =
     div
         (List.append
@@ -189,20 +185,20 @@ btn attributes contents =
         contents
 
 
-faButton : Color -> Message -> Icon Icon.WithoutId -> Html Message
+faButton : Color -> msg -> String -> Html msg
 faButton clr msg icon =
     div
         [ css [ width (px 25), cursor pointer, color clr ], onClick msg ]
-        [ Html.Styled.fromUnstyled (Icon.view icon) ]
+        [ i [ class icon ] [] ]
 
 
-faLink : Color -> List (Attribute Message) -> String -> Icon Icon.WithoutId -> Html Message
+faLink : Color -> List (Attribute msg) -> String -> String -> Html msg
 faLink colr innerStyle path icon =
     a
         [ href path, css [ color colr ] ]
         [ div
             (List.append [ css [ margin auto, cursor pointer ] ] innerStyle)
-            [ Html.Styled.fromUnstyled (Icon.view icon) ]
+            [ i [ class icon ] [] ]
         ]
 
 

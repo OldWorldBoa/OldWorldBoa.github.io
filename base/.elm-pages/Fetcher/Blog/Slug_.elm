@@ -1,0 +1,34 @@
+module Fetcher.Blog.Slug_ exposing (submit)
+
+{-| -}
+
+import Bytes exposing (Bytes)
+import Bytes.Decode
+import Http
+import Pages.Fetcher
+import Route.Blog.Slug_
+
+
+submit :
+    (Result Http.Error Route.Blog.Slug_.ActionData -> msg)
+    ->
+        { fields : List ( String, String )
+        , headers : List ( String, String )
+        }
+    -> Pages.Fetcher.Fetcher msg
+submit toMsg options =
+    { decoder =
+        \bytesResult ->
+            bytesResult
+                |> Result.andThen
+                    (\okBytes ->
+                        okBytes
+                            |> Bytes.Decode.decode Route.Blog.Slug_.w3_decode_ActionData
+                            |> Result.fromMaybe (Http.BadBody "Couldn't decode bytes.")
+                    )
+                |> toMsg
+    , fields = options.fields
+    , headers = ("elm-pages-action-only", "true") :: options.headers
+        , url = [ [ "blog" ], [ params.slug ], [ "content.dat" ] ] |> List.concat |> String.join "/" |> Just
+    }
+    |> Pages.Fetcher.Fetcher
