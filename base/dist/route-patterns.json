@@ -1,1 +1,0 @@
-[{"kind":"serverless","pathPattern":"/portfolio/contraction-timer"},{"kind":"prerender","pathPattern":"/blog/:slug"},{"kind":"serverless","pathPattern":"/about"},{"kind":"serverless","pathPattern":"/contact"},{"kind":"serverless","pathPattern":"/portfolio"},{"kind":"serverless","pathPattern":"/"}]

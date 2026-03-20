@@ -3,8 +3,9 @@
   "type": "module",
   "scripts": {
     "postinstall": "elm-tooling install",
-    "start": "elm-pages dev",
-    "build": "elm-pages build"
+    "dev": "elm-pages dev",
+    "build": "elm-pages build",
+    "start": "node dist-server/server.mjs"
   },
   "devDependencies": {
     "elm-codegen": "^0.6.3",
@@ -17,6 +18,8 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@netlify/functions": "^3.0.0"
+    "koa": "^3.1.2",
+    "koa-body": "^7.0.1",
+    "koa-static": "^5.0.0"
   }
 }
