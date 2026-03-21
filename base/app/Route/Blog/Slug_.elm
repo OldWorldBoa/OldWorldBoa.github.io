@@ -35,6 +35,19 @@ type alias BlogPostData =
     }
 
 
+type alias Comment =
+    { name : String
+    , time : String
+    , comment : String
+    }
+
+
+connection : Pages.Db.Connection
+connection =
+    FilePath.fromString ".elm-pages-data/comments.db.bin"
+        |> Pages.Db.open
+
+
 blogPost : BackendTask FatalError BlogPostData
 blogPost =
     File.bodyWithFrontmatter blogPostDecoder

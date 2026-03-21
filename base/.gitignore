@@ -1,0 +1,4 @@
+db.bin
+db.bin.lock
+db.bin.backup
+db/schema-history/
