@@ -1,16 +1,18 @@
+use rocket::serde::json::Json;
+
+use crate::comments::comment_list;
+use crate::comments::get_comments;
+use crate::comments::Comment;
+
 #[macro_use]
 extern crate rocket;
 
-mod schema;
 mod comments;
+mod schema;
 
 #[get("/ping")]
 async fn index() -> &'static str {
     "pong"
-}
-
-#[get("/comments")]
-async fn comment_list() -> {
 }
 
 #[launch]
@@ -20,5 +22,7 @@ async fn rocket() -> _ {
         Err(e) => println!("{}", e),
     }
 
-    rocket::build().mount("/", routes![index])
+    rocket::build()
+        .mount("/", routes![index])
+        .mount("/", routes![comment_list])
 }

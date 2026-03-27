@@ -1,17 +1,16 @@
 # OldWorldBoa.github.io
+Hello! This is my personal website.
 
-Hello! This is my personal website that is built using the [Elm Language](elm-lang.org). Recently, I've moved over to using [elm-pages](https://elm-pages.com/) and the [koa adapter](https://github.com/shahnhogan/elm-pages-starter-koa)
+## Client
 
-## Build
+Found in ./client/
 
-Run ``` npm run build ```
+ The front-end is built using the [Elm Language](elm-lang.org), [elm-pages](https://elm-pages.com/) and the [koa adapter](https://github.com/shahnhogan/elm-pages-starter-koa). 
 
-## Deploy
+## Server
 
-After building on the target machine, run ``` npm run start ```
+Found in ./server/
 
-This is being managed using [pm2](https://pm2.keymetrics.io/docs/usage/pm2-doc-single-page/)
+For the server portion, the elm-pages local DB wasn't working well with my IDE, so I changed to a dedicated server using Rust and Rocket.
 
-## Test
 
-Run ``` npm run dev ```

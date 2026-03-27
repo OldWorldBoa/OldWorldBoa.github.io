@@ -4,7 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-unix_time = "0.1.5"
-rocket = "0.5.1"
+unix-time = "0.1.5"
 turso = "0.4.3"
+serde = { version="1.0.130", features=["derive"] }
+rocket = { version="0.5.1", features=["json"] }
 tokio = { version = "1.0", features = ["full"] }
+libsql = "0.9.30"
+
