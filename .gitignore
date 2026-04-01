@@ -5,3 +5,4 @@ dist-server
 .elm-pages
 target
 db.bin
+blog.db

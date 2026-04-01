@@ -1,6 +1,6 @@
+use libsql::Builder;
 use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
-use turso::Builder;
 
 #[derive(Serialize, Deserialize)]
 pub struct Comment {
@@ -12,11 +12,11 @@ pub struct Comment {
 }
 
 #[get("/comment/<post_id>")]
-pub async fn comment_list(post_id: i64) -> Json<Vec<Comment>> {
-    Json(get_comments(post_id).await.unwrap())
+pub async fn get_comments_by_post(post_id: i64) -> Json<Vec<Comment>> {
+    Json(db_get_comments_by_post(post_id).await.unwrap())
 }
 
-pub async fn get_comments(post_id: i64) -> turso::Result<Vec<Comment>> {
+async fn db_get_comments_by_post(post_id: i64) -> libsql::Result<Vec<Comment>> {
     let db = Builder::new_local("blog.db").build().await?;
     let conn = db.connect()?;
 

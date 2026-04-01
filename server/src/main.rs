@@ -1,14 +1,13 @@
-use rocket::serde::json::Json;
-
-use crate::comments::comment_list;
-use crate::comments::get_comments;
-use crate::comments::Comment;
+use crate::{comments::get_comments_by_post, posts::get_posts, users::get_user_by_id};
 
 #[macro_use]
 extern crate rocket;
 
 mod comments;
+mod posts;
 mod schema;
+mod security;
+mod users;
 
 #[get("/ping")]
 async fn index() -> &'static str {
@@ -22,7 +21,13 @@ async fn rocket() -> _ {
         Err(e) => println!("{}", e),
     }
 
+    let base = "/";
     rocket::build()
-        .mount("/", routes![index])
-        .mount("/", routes![comment_list])
+        .mount(base, routes![index])
+        // Comment endpoints
+        .mount(base, routes![get_comments_by_post])
+        // User endpoints
+        .mount(base, routes![get_user_by_id])
+        // Post endpoints
+        .mount(base, routes![get_posts])
 }
