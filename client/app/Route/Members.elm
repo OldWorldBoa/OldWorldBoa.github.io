@@ -1,4 +1,4 @@
-module Route.Members.Index exposing (ActionData, Data, Model, Msg(..), RouteParams, action, data, route)
+module Route.Members exposing (ActionData, Data, Model, Msg(..), RouteParams, action, data, route)
 
 import BackendTask exposing (BackendTask)
 import BackendTask.Http
@@ -46,7 +46,7 @@ init :
     App Data ActionData RouteParams
     -> Shared.Model
     -> ( Model, Effect Msg )
-init app shared =
+init _ _ =
     ( {}, Effect.none )
 
 
@@ -56,7 +56,7 @@ update :
     -> Msg
     -> Model
     -> ( Model, Effect Msg )
-update app shared msg model =
+update _ _ msg model =
     case msg of
         NoOp ->
             ( model, Effect.none )
@@ -68,7 +68,7 @@ subscriptions :
     -> Shared.Model
     -> Model
     -> Sub Msg
-subscriptions routeParams path shared model =
+subscriptions _ _ _ _ =
     Sub.none
 
 
@@ -84,7 +84,7 @@ data :
     RouteParams
     -> Request
     -> BackendTask FatalError (Server.Response.Response Data ErrorPage)
-data routeParams request =
+data _ _ =
     BackendTask.succeed
         (Server.Response.render
             {}
@@ -92,7 +92,7 @@ data routeParams request =
 
 
 head : App Data ActionData RouteParams -> List Head.Tag
-head app =
+head _ =
     []
 
 
@@ -101,7 +101,7 @@ view :
     -> Shared.Model
     -> Model
     -> View (PagesMsg Msg)
-view app shared model =
+view _ _ _ =
     { title = "Members"
     , body =
         [ Html.Styled.toUnstyled
@@ -127,5 +127,5 @@ action :
     RouteParams
     -> Request
     -> BackendTask.BackendTask FatalError.FatalError (Server.Response.Response ActionData ErrorPage.ErrorPage)
-action routeParams request =
+action _ _ =
     BackendTask.succeed (Server.Response.render {})
