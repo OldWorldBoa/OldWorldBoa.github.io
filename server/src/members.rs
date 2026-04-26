@@ -3,19 +3,19 @@ use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct User {
+pub struct Member {
     id: i64,
     name: String,
     user_name: String,
     email: String,
 }
 
-#[get("/user/<user_id>")]
-pub async fn get_user_by_id(user_id: i64) -> Json<User> {
-    Json(db_get_user_by_id(user_id).await.unwrap())
+#[get("/admin/member/<member_id>")]
+pub async fn get_member_by_id(member_id: i64) -> Json<Member> {
+    Json(db_get_member_by_id(member_id).await.unwrap())
 }
 
-async fn db_get_user_by_id(user_id: i64) -> libsql::Result<User> {
+async fn db_get_member_by_id(user_id: i64) -> libsql::Result<Member> {
     let db = Builder::new_local("blog.db").build().await?;
     let conn = db.connect()?;
 
@@ -23,7 +23,7 @@ async fn db_get_user_by_id(user_id: i64) -> libsql::Result<User> {
         .query(
             r#"
         SELECT id, name, username, email
-        FROM user
+        FROM members
         WHERE id=?1"#,
             libsql::params![user_id],
         )
@@ -35,7 +35,7 @@ async fn db_get_user_by_id(user_id: i64) -> libsql::Result<User> {
         let user_name: String = row.get(2)?;
         let email: String = row.get(3)?;
 
-        Ok(User {
+        Ok(Member {
             id,
             name,
             user_name,

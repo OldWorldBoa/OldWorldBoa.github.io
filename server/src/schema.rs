@@ -48,7 +48,7 @@ async fn create_db() -> turso::Result<()> {
 
     conn.execute(
         r#"
-        create table if not exists users(
+        create table if not exists members(
             id integer primary key autoincrement,
             name text,
             username text not null,
@@ -65,12 +65,13 @@ async fn create_db() -> turso::Result<()> {
         r#"
         create table if not exists comments (
             id integer primary key autoincrement,
-            user_id integer not null,
+            member_id integer not null,
             post_id integer not null,
+            commented_by text not null,
             content text not null,
             approved integer,
             commented_at integer default unixepoch,
-            foreign key(user_id) references users(id),
+            foreign key(member_id) references members(id),
             foreign key(post_id) references posts(id)
         )
         "#,
@@ -79,14 +80,22 @@ async fn create_db() -> turso::Result<()> {
     .await?;
 
     // Fill in initial data
-    let rows_affected = conn
+    let posts_inserted = conn
         .execute(
             "insert into posts (path) values (?1)",
             ["blog/hello-world.md"],
         )
         .await?;
 
-    println!("Inserted {} posts", rows_affected);
+    let members_inserted = conn
+        .execute(
+            "insert into members (name, username, email, password, salt) values (?1, ?2, ?3, ?4, ?5)",
+            ["anon", "anon", "anon", "anon", "anon"],
+        )
+        .await?;
+
+    println!("Inserted {} posts", posts_inserted);
+    println!("Inserted {} members", members_inserted);
 
     Ok(())
 }

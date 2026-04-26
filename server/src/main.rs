@@ -1,13 +1,17 @@
-use crate::{comments::get_comments_by_post, posts::get_posts, users::get_user_by_id};
+use crate::{
+    comments::{create_comment, get_comments_by_post},
+    members::get_member_by_id,
+    posts::{create_post, get_posts, update_post},
+};
 
 #[macro_use]
 extern crate rocket;
 
 mod comments;
+mod members;
 mod posts;
 mod schema;
 mod security;
-mod users;
 
 #[get("/ping")]
 async fn index() -> &'static str {
@@ -18,16 +22,13 @@ async fn index() -> &'static str {
 async fn rocket() -> _ {
     match schema::migrate().await {
         Ok(_) => println!("Database migrated."),
-        Err(e) => println!("{}", e),
+        Err(e) => println!("{e}"),
     }
 
     let base = "/";
     rocket::build()
         .mount(base, routes![index])
-        // Comment endpoints
-        .mount(base, routes![get_comments_by_post])
-        // User endpoints
-        .mount(base, routes![get_user_by_id])
-        // Post endpoints
-        .mount(base, routes![get_posts])
+        .mount(base, routes![get_comments_by_post, create_comment])
+        .mount(base, routes![get_member_by_id])
+        .mount(base, routes![get_posts, create_post, update_post])
 }

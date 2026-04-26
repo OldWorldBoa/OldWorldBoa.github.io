@@ -13,6 +13,8 @@ impl<'r> FromRequest<'r> for ApiKey<'r> {
     type Error = AuthError;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        // request cookie- key starts with authentik_proxy
+        // authentik/core/users/{id}/
         todo!()
     }
 }
