@@ -2633,6 +2633,7 @@ dependencies = [
  "libsql",
  "rocket",
  "serde",
+ "serde_json",
  "tokio",
  "turso",
  "unix-time",

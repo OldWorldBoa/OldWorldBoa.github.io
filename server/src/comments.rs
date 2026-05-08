@@ -1,35 +1,32 @@
-use libsql::{params, Builder};
-use rocket::{response::status::Accepted, serde::json::Json};
+use std::net::SocketAddr;
+
+use libsql::{Database, Result, params};
+use rocket::{State, response::status::Accepted, serde::json::Json};
 use serde::{Deserialize, Serialize};
+use unix_time::Instant;
 
 #[derive(Serialize, Deserialize)]
 pub struct Comment {
-    id: i64,
-    member_id: i64,
-    post_id: i64,
     commented_by: String,
+    commented_at: u64,
     content: String,
-    approved: bool,
 }
-
-#[get("/admin/post/<post_id>/unread_comments")]
-pub async fn get_unread_comments(post_id: i64) {}
 
 #[get("/post/<post_id>/comments")]
-pub async fn get_comments_by_post(post_id: i64) -> Json<Vec<Comment>> {
-    Json(db_get_comments_by_post(post_id).await.unwrap())
+pub async fn get_comments_by_post(post_id: i64, db: &State<Database>) -> Json<Vec<Comment>> {
+    Json(db_get_comments_by_post(post_id, db).await.unwrap())
 }
 
-async fn db_get_comments_by_post(post_id: i64) -> libsql::Result<Vec<Comment>> {
-    let db = Builder::new_local("blog.db").build().await?;
+async fn db_get_comments_by_post(post_id: i64, db: &Database) -> libsql::Result<Vec<Comment>> {
     let conn = db.connect()?;
 
     let mut rows = conn
         .query(
             r#"
-        SELECT id, member_id, post_id, commented_by, content, approved, commented_at 
+        SELECT commented_by, commented_at, content
         FROM comments
-        WHERE post_id=?1 and approved=?2"#,
+        WHERE post_id=?1 and approved=?2
+        ORDER BY commented_at desc"#,
             libsql::params![post_id, true],
         )
         .await?;
@@ -37,21 +34,14 @@ async fn db_get_comments_by_post(post_id: i64) -> libsql::Result<Vec<Comment>> {
     let mut comments: Vec<Comment> = Vec::new();
 
     while let Some(row) = rows.next().await? {
-        let id: i64 = row.get(0)?;
-        let member_id: i64 = row.get(1)?;
-        let post_id: i64 = row.get(2)?;
-        let commented_by: String = row.get(3)?;
-        let content: String = row.get(4)?;
-        let approved_num: i64 = row.get(5)?;
-        let approved = approved_num > 0;
+        let commented_by: String = row.get(0)?;
+        let commented_at: u64 = row.get(1)?;
+        let content: String = row.get(2)?;
 
         comments.push(Comment {
-            id,
-            member_id,
-            post_id,
             commented_by,
+            commented_at,
             content,
-            approved,
         })
     }
 
@@ -66,30 +56,45 @@ pub struct NewComment {
 }
 
 #[post("/post/<post_id>/comment", data = "<comment_json>")]
-pub async fn create_comment(post_id: i64, comment_json: Json<NewComment>) -> Accepted<String> {
+pub async fn create_comment(
+    remote_addr: SocketAddr,
+    post_id: i64,
+    comment_json: Json<NewComment>,
+    db: &State<Database>,
+) -> Accepted<String> {
     let comment = comment_json.0;
 
-    db_create_comment(post_id, comment).await.unwrap();
+    db_create_comment(post_id, remote_addr, comment, db)
+        .await
+        .unwrap();
 
     Accepted("true".to_string())
 }
 
-async fn db_create_comment(post_id: i64, comment: NewComment) -> libsql::Result<()> {
-    let db = Builder::new_local("blog.db").build().await?;
+async fn db_create_comment(
+    post_id: i64,
+    remote_addr: SocketAddr,
+    comment: NewComment,
+    db: &State<Database>,
+) -> libsql::Result<()> {
     let conn = db.connect()?;
 
     conn.execute(
         r#"insert into comments (
             member_id,
             post_id,
+            remote_addr,
             commented_by,
+            commented_at,
             content,
             approved
-        ) values (?1, ?2, ?3, ?4, ?5)"#,
+        ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7)"#,
         params![
             comment.member_id,
             post_id,
+            remote_addr.ip().to_string(),
             comment.commented_by,
+            Instant::now().secs(),
             comment.content,
             false
         ],
@@ -97,4 +102,238 @@ async fn db_create_comment(post_id: i64, comment: NewComment) -> libsql::Result<
     .await?;
 
     Ok(())
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AdminComment {
+    id: i64,
+    member_id: i64,
+    post_id: i64,
+    remote_addr: String,
+    commented_by: String,
+    commented_at: u64,
+    content: String,
+    approved: bool,
+}
+
+#[get("/admin/comments")]
+pub async fn get_comments(db: &State<Database>) -> Json<Vec<AdminComment>> {
+    Json(db_get_comments(db).await.unwrap())
+}
+
+async fn db_get_comments(db: &Database) -> libsql::Result<Vec<AdminComment>> {
+    let conn = db.connect()?;
+
+    let mut rows = conn
+        .query(
+            r#"
+            SELECT id, member_id, post_id, remote_addr, commented_by, commented_at, content, approved, commented_at 
+            FROM comments"#,
+            (),
+        )
+        .await?;
+
+    let mut comments: Vec<AdminComment> = Vec::new();
+
+    while let Some(row) = rows.next().await? {
+        let id: i64 = row.get(0)?;
+        let member_id: i64 = row.get(1)?;
+        let post_id: i64 = row.get(2)?;
+        let remote_addr: String = row.get(3)?;
+        let commented_by: String = row.get(4)?;
+        let commented_at: u64 = row.get(5)?;
+        let content: String = row.get(6)?;
+        let approved_num: i64 = row.get(7)?;
+        let approved = approved_num > 0;
+
+        comments.push(AdminComment {
+            id,
+            member_id,
+            post_id,
+            remote_addr,
+            commented_by,
+            commented_at,
+            content,
+            approved,
+        })
+    }
+
+    Ok(comments)
+}
+
+#[put("/admin/comments", data = "<comment_json>")]
+pub async fn update_comment(
+    comment_json: Json<AdminComment>,
+    db: &State<Database>,
+) -> Accepted<String> {
+    let comment = comment_json.0;
+
+    db_update_comment(comment, db).await.unwrap();
+
+    Accepted("true".to_string())
+}
+
+async fn db_update_comment(comment: AdminComment, db: &Database) -> Result<()> {
+    let conn = db.connect()?;
+
+    conn.execute(
+        r#"update comments set
+            approved = ?2
+        where id=?1"#,
+        params![comment.id, comment.approved],
+    )
+    .await?;
+
+    Ok(())
+}
+
+#[delete("/admin/comments/<remote_addr>")]
+pub async fn delete_comments(remote_addr: &str, db: &State<Database>) -> Accepted<String> {
+    db_delete_comments(remote_addr, db).await.unwrap();
+
+    Accepted("true".to_string())
+}
+
+async fn db_delete_comments(remote_addr: &str, db: &Database) -> Result<()> {
+    let conn = db.connect()?;
+
+    conn.execute(
+        r#"delete from comments where remote_addr=?1"#,
+        params![remote_addr],
+    )
+    .await?;
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::launch::rocket;
+    use libsql::Builder;
+    use rocket::{http::Status, local::asynchronous::Client};
+
+    use crate::schema;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn comment_administration_works() {
+        let db = Builder::new_local("comments_tests.db")
+            .build()
+            .await
+            .unwrap();
+        schema::migrate(&db).await.unwrap();
+
+        let client = Client::tracked(rocket(db))
+            .await
+            .expect("valid rocket instance");
+
+        // create comment
+        // not visible on post
+        test_comment_creation(&client).await;
+
+        // can see comment in admin
+        // can approve/disapprove comment
+        // approved visible on post
+        test_admin_toggle_approval(true, &client).await;
+        test_admin_toggle_approval(false, &client).await;
+
+        // create stores ip
+        // can delete on ip
+        test_admin_mass_delete(&client).await;
+    }
+
+    async fn test_comment_creation(client: &Client) {
+        // Get comments before create
+        let pre_comments = test_get_comments_by_post(client, 1).await;
+
+        // Create comment
+        test_create_comment(client).await;
+
+        // Check created comment isn't visible
+        let comments = test_get_comments_by_post(client, 1).await;
+        assert_eq!(pre_comments.len(), comments.len());
+    }
+
+    async fn test_create_comment(client: &Client) {
+        let response = client
+            .post(uri!(create_comment(1)))
+            .remote("123.123.123.123:123".parse().unwrap())
+            .json(&NewComment {
+                member_id: 1,
+                commented_by: "123.123.12.12".to_string(),
+                content: "".to_string(),
+            })
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::Accepted);
+    }
+
+    async fn test_admin_toggle_approval(approval: bool, client: &Client) {
+        // Get all comments
+        let mut comments = test_get_comments_not_empty(approval, client).await;
+
+        let comment = comments.get_mut(0).unwrap();
+        let pre_comments = test_get_comments_by_post(client, comment.post_id).await;
+
+        test_update_comment(approval, client, comment).await;
+
+        // Check comment is visible
+        let comments = test_get_comments_by_post(client, comment.post_id).await;
+        assert_ne!(pre_comments.len(), comments.len());
+    }
+
+    async fn test_update_comment(approval: bool, client: &Client, comment: &mut AdminComment) {
+        comment.approved = approval;
+        let response = client
+            .put(uri!(super::update_comment()))
+            .json(comment)
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::Accepted);
+    }
+
+    async fn test_get_comments_by_post(client: &Client, post_id: i64) -> Vec<Comment> {
+        let response = client
+            .get(uri!(get_comments_by_post(post_id)))
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::Ok);
+        let comments: Vec<Comment> =
+            serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
+
+        comments
+    }
+
+    async fn test_get_comments(approval: bool, client: &Client) -> Vec<AdminComment> {
+        let response = client.get(uri!(super::get_comments())).dispatch().await;
+        assert_eq!(response.status(), Status::Ok);
+        let mut comments: Vec<AdminComment> =
+            serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
+        comments.retain(|c| c.approved != approval);
+
+        comments
+    }
+
+    async fn test_get_comments_not_empty(approval: bool, client: &Client) -> Vec<AdminComment> {
+        let comments = test_get_comments(approval, client).await;
+        assert_ne!(comments.len(), 0);
+
+        comments
+    }
+
+    async fn test_admin_mass_delete(client: &Client) {
+        test_create_comment(client).await;
+        let pre_comments = test_get_comments_not_empty(true, client).await;
+        let comment = pre_comments.get(0).unwrap();
+
+        let response = client
+            .delete(uri!(super::delete_comments(&comment.remote_addr)))
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::Accepted);
+
+        let comments = test_get_comments(true, client).await;
+        assert_ne!(pre_comments.len(), comments.len());
+    }
 }

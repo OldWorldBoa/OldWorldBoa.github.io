@@ -6,3 +6,4 @@ dist-server
 target
 db.bin
 blog.db
+*_tests.db

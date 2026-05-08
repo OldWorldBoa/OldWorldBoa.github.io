@@ -1,13 +1,10 @@
-use crate::{
-    comments::{create_comment, get_comments_by_post},
-    members::get_member_by_id,
-    posts::{create_post, get_posts, update_post},
-};
+use libsql::Builder;
 
 #[macro_use]
 extern crate rocket;
 
 mod comments;
+mod launch;
 mod members;
 mod posts;
 mod schema;
@@ -19,16 +16,12 @@ async fn index() -> &'static str {
 }
 
 #[launch]
-async fn rocket() -> _ {
-    match schema::migrate().await {
+async fn rocket_main() -> _ {
+    let db = Builder::new_local("blog.db").build().await.unwrap();
+    match schema::migrate(&db).await {
         Ok(_) => println!("Database migrated."),
         Err(e) => println!("{e}"),
     }
 
-    let base = "/";
-    rocket::build()
-        .mount(base, routes![index])
-        .mount(base, routes![get_comments_by_post, create_comment])
-        .mount(base, routes![get_member_by_id])
-        .mount(base, routes![get_posts, create_post, update_post])
+    launch::rocket(db)
 }

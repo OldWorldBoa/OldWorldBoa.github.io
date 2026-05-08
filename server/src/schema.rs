@@ -1,11 +1,10 @@
-use turso::Builder;
+use libsql::{Database, Error};
 
-pub async fn migrate() -> turso::Result<()> {
-    create_db().await
+pub async fn migrate(db: &Database) -> Result<(), Error> {
+    create_db(db).await
 }
 
-async fn create_db() -> turso::Result<()> {
-    let db = Builder::new_local("blog.db").build().await?;
+async fn create_db(db: &Database) -> Result<(), Error> {
     let conn = db.connect()?;
 
     // Create versioning
@@ -68,9 +67,10 @@ async fn create_db() -> turso::Result<()> {
             member_id integer not null,
             post_id integer not null,
             commented_by text not null,
+            remote_addr text not null,
             content text not null,
             approved integer,
-            commented_at integer default unixepoch,
+            commented_at integer not null,
             foreign key(member_id) references members(id),
             foreign key(post_id) references posts(id)
         )
