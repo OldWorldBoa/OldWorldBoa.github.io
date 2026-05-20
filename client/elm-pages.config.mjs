@@ -6,8 +6,10 @@ export default {
   adapter,
   headTagsTemplate(context) {
     return `
+<link rel="favicon" type="image/ico" href="favicon.ico"  />
 <link rel="stylesheet" href="/style.css" />
 <script src="https://kit.fontawesome.com/a50743c03b.js" crossorigin="anonymous"></script>
+<script src=" https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.min.js "></script>
 <meta name="generator" content="elm-pages v${context.cliVersion}" />
 `;
   },

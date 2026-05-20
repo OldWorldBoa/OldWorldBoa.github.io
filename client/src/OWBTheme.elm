@@ -7,6 +7,8 @@ import Css.Transitions exposing (transition)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (class, css, href, src)
 import Html.Styled.Events exposing (onClick)
+import Time
+import TimeUtils
 
 
 theme :
@@ -58,6 +60,37 @@ initGlobalStyles =
         ]
 
 
+tabBtn : List (Attribute msg) -> List (Html msg) -> Html msg
+tabBtn attributes contents =
+    div
+        (List.append
+            [ css
+                [ display block
+                , fontFamilies [ "Megrim" ]
+                , fontWeight bold
+                , fontSize (px 25)
+                , color theme.text
+                , textDecoration none
+                , padding4 (px 15) (px 20) (px 15) (px 20)
+                , cursor pointer
+                , backgroundSize2 (pct 100) (pct 200)
+                , backgroundPosition bottom
+                , backgroundImage
+                    (linearGradient2
+                        toTop
+                        (stop2 theme.background <| pct 51)
+                        (stop2 theme.secondary <| pct 50)
+                        []
+                    )
+                , hover [ backgroundPosition top ]
+                , transition [ Css.Transitions.backgroundPosition 100 ]
+                ]
+            ]
+            attributes
+        )
+        contents
+
+
 menuBtn : List (Attribute msg) -> List (Html msg) -> Html msg
 menuBtn attributes contents =
     a
@@ -81,7 +114,7 @@ menuBtn attributes contents =
                         []
                     )
                 , hover [ backgroundPosition left ]
-                , transition [ Css.Transitions.backgroundPosition 250 ]
+                , transition [ Css.Transitions.backgroundPosition 100 ]
                 ]
             ]
             attributes
@@ -269,3 +302,45 @@ spacer =
             ]
         ]
         []
+
+
+type alias Post =
+    { id : Int
+    , path : String
+    , publish_time : Time.Posix
+    , title : String
+    , author : String
+    , tags : String
+    , preview : String
+    }
+
+
+getPostHtml : Time.Zone -> Post -> Html.Styled.Html msg
+getPostHtml zone post =
+    card
+        [ h2 [ css [ marginTop (px 0), textAlign center ] ]
+            [ link
+                [ href ("blog/" ++ post.path) ]
+                [ text post.title ]
+            ]
+        , h4
+            [ css [ textAlign center ] ]
+            [ text (post.author ++ " - " ++ TimeUtils.toDate zone post.publish_time) ]
+        , div [] [ text post.preview ]
+        ]
+
+
+card : List (Html msg) -> Html msg
+card content =
+    div
+        [ css
+            [ paddingLeft (px 15)
+            , paddingRight (px 15)
+            , paddingBottom (px 15)
+            , paddingTop (px 15)
+            , margin (px 15)
+            , borderRadius (px 5)
+            , boxShadow4 (px -2) (px 2) (px 7) (rgb 0 0 0)
+            ]
+        ]
+        content

@@ -18,6 +18,11 @@ const config: ElmPagesInit = {
 		});
 
 		app.ports.loadContractions.send(JSON.parse(localStorage.getItem('owb-contractions')));
+
+		app.ports.initializeMermad.subscribe(function () {
+		  console.log("TS: Initialize Mermaid.");
+		  mermaid.init();
+		});
 	},
 	flags: function () {
 		return "You can decode this in Shared.elm using Json.Decode.string!";

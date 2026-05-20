@@ -17,7 +17,6 @@ import SharedTemplate exposing (SharedTemplate)
 import UrlPath exposing (UrlPath)
 import View exposing (View)
 
-
 template : SharedTemplate Msg Model Data msg
 template =
     { init = init
@@ -28,24 +27,19 @@ template =
     , onPageChange = Nothing
     }
 
-
 type Msg
     = SharedMsg SharedMsg
     | MenuClicked
 
-
 type alias Data =
     ()
-
 
 type SharedMsg
     = NoOp
 
-
 type alias Model =
     { showMenu : Bool
     }
-
 
 init :
     Pages.Flags.Flags
@@ -65,7 +59,6 @@ init flags maybePagePath =
     , Effect.none
     )
 
-
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
@@ -75,16 +68,13 @@ update msg model =
         MenuClicked ->
             ( { model | showMenu = not model.showMenu }, Effect.none )
 
-
 subscriptions : UrlPath -> Model -> Sub Msg
 subscriptions _ _ =
     Sub.none
 
-
 data : BackendTask FatalError Data
 data =
     BackendTask.succeed ()
-
 
 view :
     Data
@@ -152,7 +142,6 @@ view sharedData page model toMsg pageView =
     , title = pageView.title
     }
 
-
 desktopNav : Model -> Html.Styled.Html msg
 desktopNav model =
     div
@@ -184,10 +173,10 @@ desktopNav model =
                 []
             , menuBtn [ href "/about" ] [ text "About" ]
             , menuBtn [ href "/portfolio" ] [ text "Portfolio" ]
+            , menuBtn [ href "/blog" ] [ text "Blog" ]
             , menuBtn [ href "/contact" ] [ text "Contact" ]
             ]
         ]
-
 
 mobileNav : Model -> Html.Styled.Html Msg
 mobileNav model =
@@ -239,6 +228,19 @@ mobileNav model =
                     "fa-solid fa-briefcase"
                 ]
             , div
+                [ mobileNavStyle ]
+                [ faLink
+                    theme.link
+                    [ css
+                        [ height (px 30)
+                        , width (px 30)
+                        , mobile [ height (px 25), width (px 25) ]
+                        ]
+                    ]
+                    "/blog"
+                    "fa-solid fa-blog"
+                ]
+            , div
                 [ mobileNavStyle
                 , css [ borderRadius4 (px 0) (px 0) (px 6) (px 6) ]
                 ]
@@ -255,7 +257,6 @@ mobileNav model =
                 ]
             ]
         ]
-
 
 mobileNavStyle : Attribute msg
 mobileNavStyle =

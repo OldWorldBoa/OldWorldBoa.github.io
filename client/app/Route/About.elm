@@ -120,7 +120,7 @@ view app shared model =
                         ]
                     ]
                     [ img
-                        [ src "../res/img/pages/about/profile.jpg"
+                        [ src "../res/img/pages/about/profile-new.png"
                         , css
                             [ height (px 150), borderRadius (px 5), mobile [ height (px 250) ] ]
                         ]
@@ -128,7 +128,7 @@ view app shared model =
                     ]
                 , div []
                     [ p []
-                        [ text "Hello! I'm OldWorldBoa and thanks for coming to check out my website. I've been a software developer since 2016, working on software like CRMs, finance glue, and self-service portals. Join me on twitch and check out my YouTube channel for my content!"
+                        [ text "Hello! I'm OldWorldBoa and thanks for coming to check out my website. I've been a software developer since 2016, working on software like CRMs, finance glue, and self-service portals. Peruse my website, which has some little projects on it, as well as my blog, where I discuss Computer Science professionalism, ethics, and special interests."
                         ]
                     , p []
                         [ text "I have several personal projects including this website: a bible comparer, a chess game, and an educational maze maker. Check out my portfolio for more!"
