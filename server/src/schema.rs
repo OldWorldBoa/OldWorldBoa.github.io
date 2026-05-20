@@ -39,7 +39,11 @@ async fn create_db(db: &Database) -> Result<(), Error> {
         create table if not exists posts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             path TEXT NOT NULL,
-            publish_unix_time INTEGER DEFAULT 9223372036854775807
+            author TEXT NOT NULL,
+            tags TEXT NOT NULL,
+            title TEXT NOT NULL,
+            preview TEXT NOT NULL,
+            publish_unix_time INTEGER DEFAULT 9223372036854775
         )"#,
         (),
     )
@@ -82,8 +86,9 @@ async fn create_db(db: &Database) -> Result<(), Error> {
     // Fill in initial data
     let posts_inserted = conn
         .execute(
-            "insert into posts (path) values (?1)",
-            ["blog/hello-world.md"],
+            "insert into posts (path, author, tags, title, preview) values (?1, ?2, ?3, ?4, ?5)",
+            ["hello-world", "OldWorldBoa", "Beginnings", "new Blog(The Byte Station)",
+                "Hello! Welcome one and all! Thank you so much for stopping by for my inaugural blog post. I'm OldWorldBoa and *this* is The Byte Station. Stick around as I explore what it means to be a computer scientist, from philosophy to nitty-gritty implementation."],
         )
         .await?;
 

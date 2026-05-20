@@ -27,7 +27,7 @@ async fn db_get_comments_by_post(post_id: i64, db: &Database) -> libsql::Result<
         FROM comments
         WHERE post_id=?1 and approved=?2
         ORDER BY commented_at desc"#,
-            libsql::params![post_id, true],
+            libsql::params![post_id, approval_to_id(true)],
         )
         .await?;
 
@@ -113,7 +113,7 @@ pub struct AdminComment {
     commented_by: String,
     commented_at: u64,
     content: String,
-    approved: bool,
+    approved: i64,
 }
 
 #[get("/admin/comments")]
@@ -143,8 +143,7 @@ async fn db_get_comments(db: &Database) -> libsql::Result<Vec<AdminComment>> {
         let commented_by: String = row.get(4)?;
         let commented_at: u64 = row.get(5)?;
         let content: String = row.get(6)?;
-        let approved_num: i64 = row.get(7)?;
-        let approved = approved_num > 0;
+        let approved: i64 = row.get(7)?;
 
         comments.push(AdminComment {
             id,
@@ -161,16 +160,20 @@ async fn db_get_comments(db: &Database) -> libsql::Result<Vec<AdminComment>> {
     Ok(comments)
 }
 
-#[put("/admin/comments", data = "<comment_json>")]
+#[put("/admin/comment/<comment_id>", data = "<comment_json>")]
 pub async fn update_comment(
+    comment_id: i64,
     comment_json: Json<AdminComment>,
     db: &State<Database>,
-) -> Accepted<String> {
+) -> Json<Vec<AdminComment>> {
     let comment = comment_json.0;
+    if comment_id != comment.id {
+        panic!("You're updating the wrong comment!");
+    }
 
     db_update_comment(comment, db).await.unwrap();
 
-    Accepted("true".to_string())
+    get_comments(db).await
 }
 
 async fn db_update_comment(comment: AdminComment, db: &Database) -> Result<()> {
@@ -188,10 +191,10 @@ async fn db_update_comment(comment: AdminComment, db: &Database) -> Result<()> {
 }
 
 #[delete("/admin/comments/<remote_addr>")]
-pub async fn delete_comments(remote_addr: &str, db: &State<Database>) -> Accepted<String> {
+pub async fn delete_comments(remote_addr: &str, db: &State<Database>) -> Json<Vec<AdminComment>> {
     db_delete_comments(remote_addr, db).await.unwrap();
 
-    Accepted("true".to_string())
+    get_comments(db).await
 }
 
 async fn db_delete_comments(remote_addr: &str, db: &Database) -> Result<()> {
@@ -204,6 +207,26 @@ async fn db_delete_comments(remote_addr: &str, db: &Database) -> Result<()> {
     .await?;
 
     Ok(())
+}
+
+#[delete("/admin/comment/<comment_id>")]
+pub async fn delete_comment(comment_id: i64, db: &State<Database>) -> Json<Vec<AdminComment>> {
+    db_delete_comment(comment_id, db).await.unwrap();
+
+    get_comments(db).await
+}
+
+async fn db_delete_comment(comment_id: i64, db: &Database) -> Result<()> {
+    let conn = db.connect()?;
+
+    conn.execute(r#"delete from comments where id=?1"#, params![comment_id])
+        .await?;
+
+    Ok(())
+}
+
+fn approval_to_id(approval: bool) -> i64 {
+    if approval { 1 } else { 2 }
 }
 
 #[cfg(test)]
@@ -235,9 +258,11 @@ mod tests {
         // can see comment in admin
         // can approve/disapprove comment
         // approved visible on post
-        test_admin_toggle_approval(true, &client).await;
-        test_admin_toggle_approval(false, &client).await;
+        test_approve_comment(&client).await;
+        test_reject_comment(&client).await;
 
+        // can delete on id
+        test_admin_single_delete(&client).await;
         // create stores ip
         // can delete on ip
         test_admin_mass_delete(&client).await;
@@ -269,28 +294,52 @@ mod tests {
         assert_eq!(response.status(), Status::Accepted);
     }
 
-    async fn test_admin_toggle_approval(approval: bool, client: &Client) {
+    async fn test_approve_comment(client: &Client) {
         // Get all comments
-        let mut comments = test_get_comments_not_empty(approval, client).await;
+        let mut comments = test_get_comments_not_empty(0, client).await;
 
         let comment = comments.get_mut(0).unwrap();
         let pre_comments = test_get_comments_by_post(client, comment.post_id).await;
 
-        test_update_comment(approval, client, comment).await;
+        test_update_comment(1, client, comment).await;
+
+        let comments = test_get_comments_by_post(client, comment.post_id).await;
 
         // Check comment is visible
-        let comments = test_get_comments_by_post(client, comment.post_id).await;
         assert_ne!(pre_comments.len(), comments.len());
     }
 
-    async fn test_update_comment(approval: bool, client: &Client, comment: &mut AdminComment) {
+    async fn test_reject_comment(client: &Client) {
+        // Get all comments
+        let mut comments = test_get_comments_not_empty(1, client).await;
+        let comment = comments.get_mut(0).unwrap();
+
+        let pre_comments = test_get_comments_by_post(client, comment.post_id).await;
+
+        test_update_comment(2, client, comment).await;
+
+        let comments = test_get_comments_by_post(client, comment.post_id).await;
+
+        // Check comment is visible
+        assert_ne!(pre_comments.len(), comments.len());
+    }
+
+    async fn test_update_comment(
+        approval: i64,
+        client: &Client,
+        comment: &mut AdminComment,
+    ) -> Vec<AdminComment> {
         comment.approved = approval;
         let response = client
-            .put(uri!(super::update_comment()))
+            .put(uri!(super::update_comment(comment.id)))
             .json(comment)
             .dispatch()
             .await;
-        assert_eq!(response.status(), Status::Accepted);
+        assert_eq!(response.status(), Status::Ok);
+        let comments: Vec<AdminComment> =
+            serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
+
+        comments
     }
 
     async fn test_get_comments_by_post(client: &Client, post_id: i64) -> Vec<Comment> {
@@ -305,35 +354,50 @@ mod tests {
         comments
     }
 
-    async fn test_get_comments(approval: bool, client: &Client) -> Vec<AdminComment> {
+    async fn test_get_comments(approval: i64, client: &Client) -> Vec<AdminComment> {
         let response = client.get(uri!(super::get_comments())).dispatch().await;
         assert_eq!(response.status(), Status::Ok);
         let mut comments: Vec<AdminComment> =
             serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
-        comments.retain(|c| c.approved != approval);
+        comments.retain(|c| c.approved == approval);
 
         comments
     }
 
-    async fn test_get_comments_not_empty(approval: bool, client: &Client) -> Vec<AdminComment> {
+    async fn test_get_comments_not_empty(approval: i64, client: &Client) -> Vec<AdminComment> {
         let comments = test_get_comments(approval, client).await;
         assert_ne!(comments.len(), 0);
 
         comments
     }
 
+    async fn test_admin_single_delete(client: &Client) {
+        test_create_comment(client).await;
+        let pre_comments = test_get_comments_not_empty(0, client).await;
+        let comment = pre_comments.get(0).unwrap();
+
+        let response = client
+            .delete(uri!(super::delete_comment(&comment.id)))
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::Ok);
+        let comments: Vec<AdminComment> =
+            serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
+        assert_ne!(pre_comments.len(), comments.len());
+    }
+
     async fn test_admin_mass_delete(client: &Client) {
         test_create_comment(client).await;
-        let pre_comments = test_get_comments_not_empty(true, client).await;
+        let pre_comments = test_get_comments_not_empty(0, client).await;
         let comment = pre_comments.get(0).unwrap();
 
         let response = client
             .delete(uri!(super::delete_comments(&comment.remote_addr)))
             .dispatch()
             .await;
-        assert_eq!(response.status(), Status::Accepted);
-
-        let comments = test_get_comments(true, client).await;
+        assert_eq!(response.status(), Status::Ok);
+        let comments: Vec<AdminComment> =
+            serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
         assert_ne!(pre_comments.len(), comments.len());
     }
 }
