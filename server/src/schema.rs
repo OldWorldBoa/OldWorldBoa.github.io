@@ -31,14 +31,14 @@ async fn create_db(db: &Database) -> Result<(), Error> {
     )
     .await?;
 
-    println!("Inserted version 1");
+    println!("Created version 1");
 
     // Create initial schema
     conn.execute(
         r#"
         create table if not exists posts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            path TEXT NOT NULL,
+            path TEXT UNIQUE NOT NULL,
             author TEXT NOT NULL,
             tags TEXT NOT NULL,
             title TEXT NOT NULL,

@@ -8,7 +8,7 @@ use crate::{
     },
     index,
     members::get_member_by_id,
-    posts::{create_post, delete_post, get_all_posts, get_published_posts, update_post},
+    posts::{create_post, delete_post, get_all_posts, get_post, get_published_posts, update_post},
 };
 
 pub fn rocket(db: Database) -> Rocket<Build> {
@@ -32,6 +32,7 @@ pub fn rocket(db: Database) -> Rocket<Build> {
             routes![
                 get_published_posts,
                 get_all_posts,
+                get_post,
                 create_post,
                 update_post,
                 delete_post

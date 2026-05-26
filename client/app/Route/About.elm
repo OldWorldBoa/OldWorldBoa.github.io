@@ -2,7 +2,7 @@ module Route.About exposing (ActionData, Data, Model, Msg(..), RouteParams, acti
 
 import BackendTask exposing (BackendTask)
 import BackendTask.Http
-import Css exposing (borderRadius, center, displayFlex, flexWrap, height, justifyContent, marginRight, marginTop, px, wrap)
+import Css exposing (borderRadius, center, displayFlex, flexWrap, height, inherit, justifyContent, marginRight, marginTop, px, width, wrap)
 import Effect exposing (Effect)
 import ErrorPage exposing (ErrorPage)
 import FatalError exposing (FatalError)
@@ -32,6 +32,7 @@ type alias RouteParams =
     {}
 
 
+route : RouteBuilder.StatefulRoute RouteParams Data ActionData Model Msg
 route =
     RouteBuilder.serverRender { data = data, action = action, head = head }
         |> RouteBuilder.buildWithLocalState
@@ -122,7 +123,11 @@ view app shared model =
                     [ img
                         [ src "../res/img/pages/about/profile-new.png"
                         , css
-                            [ height (px 150), borderRadius (px 5), mobile [ height (px 250) ] ]
+                            [ height (px 150)
+                            , width inherit
+                            , borderRadius (px 5)
+                            , mobile [ height (px 250) ]
+                            ]
                         ]
                         []
                     ]

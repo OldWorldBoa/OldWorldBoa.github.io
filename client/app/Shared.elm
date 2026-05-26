@@ -1,7 +1,7 @@
 module Shared exposing (Data, Model, Msg(..), SharedMsg(..), template)
 
 import BackendTask exposing (BackendTask)
-import Css exposing (absolute, active, auto, backgroundColor, backgroundImage, backgroundPosition, backgroundRepeat, backgroundSize, block, border3, borderBottom3, borderBox, borderLeft3, borderRadius, borderRadius4, boxShadow4, boxSizing, center, column, cursor, display, displayFlex, flexDirection, height, justifyContent, margin, marginBottom, marginRight, maxWidth, noRepeat, none, overflow, padding, paddingBottom, paddingLeft, paddingRight, paddingTop, pct, pointer, position, px, rgb, right, solid, textDecoration, url, width)
+import Css exposing (absolute, active, auto, backgroundColor, backgroundImage, backgroundPosition, backgroundRepeat, backgroundSize, block, border3, borderBottom3, borderBox, borderLeft3, borderRadius, borderRadius4, boxShadow4, boxSizing, center, column, cursor, display, displayFlex, flexDirection, height, justifyContent, margin, marginBottom, marginRight, maxWidth, noRepeat, none, overflow, padding, paddingBottom, paddingLeft, paddingRight, paddingTop, pct, pointer, position, px, rgb, right, scroll, solid, textDecoration, url, width)
 import Effect exposing (Effect)
 import FatalError exposing (FatalError)
 import Html exposing (Html)
@@ -9,6 +9,7 @@ import Html.Events
 import Html.Styled exposing (Attribute, div, node, text)
 import Html.Styled.Attributes exposing (css, href, rel)
 import Html.Styled.Events exposing (onClick)
+import LanguageTag.Language exposing (sc)
 import OWBTheme exposing (desktop, faLink, initGlobalStyles, menuBtn, menuIconBtn, mobile, spacer, theme)
 import Pages.Flags
 import Pages.PageUrl exposing (PageUrl)
@@ -16,6 +17,7 @@ import Route exposing (Route)
 import SharedTemplate exposing (SharedTemplate)
 import UrlPath exposing (UrlPath)
 import View exposing (View)
+
 
 template : SharedTemplate Msg Model Data msg
 template =
@@ -27,19 +29,24 @@ template =
     , onPageChange = Nothing
     }
 
+
 type Msg
     = SharedMsg SharedMsg
     | MenuClicked
 
+
 type alias Data =
     ()
+
 
 type SharedMsg
     = NoOp
 
+
 type alias Model =
     { showMenu : Bool
     }
+
 
 init :
     Pages.Flags.Flags
@@ -59,6 +66,7 @@ init flags maybePagePath =
     , Effect.none
     )
 
+
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
@@ -68,13 +76,16 @@ update msg model =
         MenuClicked ->
             ( { model | showMenu = not model.showMenu }, Effect.none )
 
+
 subscriptions : UrlPath -> Model -> Sub Msg
 subscriptions _ _ =
     Sub.none
 
+
 data : BackendTask FatalError Data
 data =
     BackendTask.succeed ()
+
 
 view :
     Data
@@ -116,6 +127,7 @@ view sharedData page model toMsg pageView =
                             , maxWidth (px 1200)
                             , paddingRight (px 20)
                             , paddingLeft (px 20)
+                            , overflow scroll
                             ]
                         ]
                         -- main content
@@ -141,6 +153,7 @@ view sharedData page model toMsg pageView =
         ]
     , title = pageView.title
     }
+
 
 desktopNav : Model -> Html.Styled.Html msg
 desktopNav model =
@@ -177,6 +190,7 @@ desktopNav model =
             , menuBtn [ href "/contact" ] [ text "Contact" ]
             ]
         ]
+
 
 mobileNav : Model -> Html.Styled.Html Msg
 mobileNav model =
@@ -257,6 +271,7 @@ mobileNav model =
                 ]
             ]
         ]
+
 
 mobileNavStyle : Attribute msg
 mobileNavStyle =

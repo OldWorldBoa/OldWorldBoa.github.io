@@ -1,11 +1,14 @@
-use libsql::Database;
+use libsql::{Database, Error};
 use rocket::{
     State,
+    http::Status,
     response::status::{self, Accepted},
     serde::json::Json,
 };
 use serde::{Deserialize, Serialize};
 use unix_time::Instant;
+
+use crate::security::FromLocal;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Post {
@@ -24,7 +27,7 @@ pub async fn get_published_posts(db: &State<Database>) -> Json<Vec<Post>> {
 }
 
 #[get("/admin/posts")]
-pub async fn get_all_posts(db: &State<Database>) -> Json<Vec<Post>> {
+pub async fn get_all_posts(_from_local: FromLocal, db: &State<Database>) -> Json<Vec<Post>> {
     Json(db_get_posts(false, db).await.unwrap())
 }
 
@@ -41,7 +44,6 @@ async fn db_get_posts(filter_published: bool, db: &State<Database>) -> libsql::R
         params = [1];
     }
     query.push_str(filter);
-    println!("{query}");
 
     let mut rows = db.connect()?.query(&query, params).await?;
 
@@ -70,6 +72,46 @@ async fn db_get_posts(filter_published: bool, db: &State<Database>) -> libsql::R
     Ok(posts)
 }
 
+#[get("/post/<post_path>")]
+pub async fn get_post(post_path: &str, db: &State<Database>) -> Result<Json<Post>, Status> {
+    match db_get_post(post_path, db).await {
+        Ok(post) => Ok(Json(post)),
+        Err(e) => match e {
+            Error::QueryReturnedNoRows => Err(Status::NotFound),
+            _ => Err(Status::InternalServerError),
+        },
+    }
+}
+
+async fn db_get_post(post_path: &str, db: &Database) -> libsql::Result<Post> {
+    let query =
+        r#"SELECT id, path, title, author, tags, preview, publish_unix_time FROM posts WHERE path = ?1"#.to_owned();
+
+    let mut rows = db.connect()?.query(&query, [post_path]).await?;
+
+    if let Some(row) = rows.next().await? {
+        let id: i64 = row.get(0)?;
+        let path: String = row.get(1)?;
+        let title: String = row.get(2)?;
+        let author: String = row.get(3)?;
+        let tags: String = row.get(4)?;
+        let preview: String = row.get(5)?;
+        let publish_time: u64 = row.get(6)?;
+
+        Ok(Post {
+            id,
+            path,
+            publish_time,
+            title,
+            author,
+            tags,
+            preview,
+        })
+    } else {
+        Err(Error::QueryReturnedNoRows)
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct NewPost {
     path: String,
@@ -80,7 +122,11 @@ pub struct NewPost {
 }
 
 #[post("/admin/post", data = "<new_post>")]
-pub async fn create_post(new_post: Json<NewPost>, db: &State<Database>) -> Json<Vec<Post>> {
+pub async fn create_post(
+    new_post: Json<NewPost>,
+    _from_local: FromLocal,
+    db: &State<Database>,
+) -> Json<Vec<Post>> {
     db_create_post(new_post.0, db).await.unwrap();
 
     Json(db_get_posts(false, db).await.unwrap())
@@ -107,6 +153,7 @@ async fn db_create_post(new_post: NewPost, db: &State<Database>) -> libsql::Resu
 pub async fn update_post(
     post_id: i64,
     json_post: Json<Post>,
+    _from_local: FromLocal,
     db: &State<Database>,
 ) -> Json<Vec<Post>> {
     let post = json_post.0;
@@ -131,7 +178,11 @@ async fn db_update_post(post: Post, db: &State<Database>) -> libsql::Result<()> 
 }
 
 #[delete("/admin/post/<post_id>")]
-pub async fn delete_post(post_id: i64, db: &State<Database>) -> Accepted<String> {
+pub async fn delete_post(
+    post_id: i64,
+    _from_local: FromLocal,
+    db: &State<Database>,
+) -> Accepted<String> {
     db_delete_post(post_id, db).await.unwrap();
 
     status::Accepted("true".to_string())
@@ -167,6 +218,8 @@ mod tests {
 
         test_create_post(&client).await;
 
+        test_get_post_by_path(&client).await;
+
         test_post_update(&client).await;
 
         test_post_delete(&client).await;
@@ -184,6 +237,7 @@ mod tests {
                 preview: "preview".to_string(),
                 tags: "tags".to_string(),
             })
+            .remote("127.0.0.1:80".parse().unwrap())
             .dispatch()
             .await;
         assert_eq!(response.status(), Status::Ok);
@@ -204,8 +258,20 @@ mod tests {
         }
     }
 
+    async fn test_get_post_by_path(client: &Client) {
+        let response = client
+            .get(uri!(super::get_post("test_path")))
+            .remote("127.0.0.1:80".parse().unwrap())
+            .dispatch()
+            .await;
+        assert_eq!(response.status(), Status::Ok);
+
+        let post: Post = serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
+        assert_eq!("test_path", post.path);
+    }
+
     async fn test_post_update(client: &Client) {
-        let mut posts = test_admin_get(&client).await;
+        let mut posts = test_admin_get(client).await;
         let test_post = posts.get_mut(0);
 
         match test_post {
@@ -213,6 +279,7 @@ mod tests {
                 post.publish_time = 2000;
                 let response = client
                     .put(uri!(super::update_post(post.id)))
+                    .remote("127.0.0.1:80".parse().unwrap())
                     .json(post)
                     .dispatch()
                     .await;
@@ -234,22 +301,27 @@ mod tests {
     }
 
     async fn test_post_delete(client: &Client) {
-        let posts = test_admin_get(&client).await;
+        let posts = test_admin_get(client).await;
         for post in posts.iter() {
             let response = client
                 .delete(uri!(super::delete_post(post.id)))
+                .remote("127.0.0.1:80".parse().unwrap())
                 .dispatch()
                 .await;
             assert_eq!(response.status(), Status::Accepted);
             assert_eq!("true".to_string(), response.into_string().await.unwrap());
         }
 
-        let posts = test_admin_get(&client).await;
+        let posts = test_admin_get(client).await;
         assert_eq!(0, posts.len());
     }
 
     async fn test_admin_get(client: &Client) -> Vec<Post> {
-        let response = client.get(uri!(super::get_all_posts())).dispatch().await;
+        let response = client
+            .get(uri!(super::get_all_posts()))
+            .remote("127.0.0.1:80".parse().unwrap())
+            .dispatch()
+            .await;
         assert_eq!(response.status(), Status::Ok);
         let mut posts: Vec<Post> =
             serde_json::from_str(&response.into_string().await.unwrap()).unwrap();

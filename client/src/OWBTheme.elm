@@ -1,7 +1,7 @@
 module OWBTheme exposing (..)
 
 import Css exposing (..)
-import Css.Global exposing (body, global, html)
+import Css.Global exposing (body, descendants, global, html, typeSelector)
 import Css.Media exposing (only, screen, withMedia)
 import Css.Transitions exposing (transition)
 import Html.Styled exposing (..)
@@ -16,6 +16,7 @@ theme :
     , secondary : Color
     , text : Color
     , background : Color
+    , lightBackground : Color
     , link : Color
     , linkVisited : Color
     }
@@ -24,6 +25,7 @@ theme =
     , secondary = hex "A3320B"
     , text = hex "D3D3D3"
     , background = hex "3A4041"
+    , lightBackground = hex "808687"
     , link = hex "9FD9BA"
     , linkVisited = hex "D6633F"
     }
@@ -57,6 +59,11 @@ initGlobalStyles =
             , fontSize (px 18)
             ]
         , html [ height (pct 100) ]
+        , typeSelector "main"
+            [ descendants
+                [ typeSelector "img" [ width (pct 100) ]
+                ]
+            ]
         ]
 
 
@@ -344,3 +351,49 @@ card content =
             ]
         ]
         content
+
+
+styledInput : List (Attribute msg) -> List (Html msg) -> Html msg
+styledInput attributes contents =
+    input
+        (List.append
+            [ css
+                [ backgroundColor theme.lightBackground
+                , borderRadius (px 5)
+                , border3 (px 2) solid theme.primary
+                , width (pct 100)
+                , boxSizing borderBox
+                , boxShadow6 inset (px 0) (px 0) (px 3) (px 3) (hex "111111")
+                , paddingRight (px 10)
+                , paddingTop (px 10)
+                , paddingBottom (px 10)
+                , paddingLeft (px 10)
+                , fontSize (px 15)
+                ]
+            ]
+            attributes
+        )
+        contents
+
+
+styledTextarea : List (Attribute msg) -> Html msg
+styledTextarea attributes =
+    textarea
+        (List.append
+            [ css
+                [ backgroundColor theme.lightBackground
+                , borderRadius (px 5)
+                , border3 (px 2) solid theme.primary
+                , width (pct 100)
+                , boxSizing borderBox
+                , boxShadow6 inset (px 0) (px 0) (px 3) (px 3) (hex "111111")
+                , paddingRight (px 10)
+                , paddingTop (px 10)
+                , paddingBottom (px 10)
+                , paddingLeft (px 10)
+                , resize vertical
+                ]
+            ]
+            attributes
+        )
+        []

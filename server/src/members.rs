@@ -2,6 +2,8 @@ use libsql::Database;
 use rocket::{State, serde::json::Json};
 use serde::{Deserialize, Serialize};
 
+use crate::security::FromLocal;
+
 #[derive(Serialize, Deserialize)]
 pub struct Member {
     id: i64,
@@ -11,7 +13,11 @@ pub struct Member {
 }
 
 #[get("/admin/member/<member_id>")]
-pub async fn get_member_by_id(member_id: i64, db: &State<Database>) -> Json<Member> {
+pub async fn get_member_by_id(
+    member_id: i64,
+    _from_local: FromLocal,
+    db: &State<Database>,
+) -> Json<Member> {
     Json(db_get_member_by_id(member_id, db).await.unwrap())
 }
 
@@ -69,6 +75,7 @@ mod tests {
 
         let response = client
             .get(uri!(super::get_member_by_id(1)))
+            .remote("127.0.0.1:80".parse().unwrap())
             .dispatch()
             .await;
 

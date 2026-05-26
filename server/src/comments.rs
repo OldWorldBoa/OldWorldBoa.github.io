@@ -5,6 +5,8 @@ use rocket::{State, response::status::Accepted, serde::json::Json};
 use serde::{Deserialize, Serialize};
 use unix_time::Instant;
 
+use crate::security::FromLocal;
+
 #[derive(Serialize, Deserialize)]
 pub struct Comment {
     commented_by: String,
@@ -117,7 +119,7 @@ pub struct AdminComment {
 }
 
 #[get("/admin/comments")]
-pub async fn get_comments(db: &State<Database>) -> Json<Vec<AdminComment>> {
+pub async fn get_comments(_from_local: FromLocal, db: &State<Database>) -> Json<Vec<AdminComment>> {
     Json(db_get_comments(db).await.unwrap())
 }
 
@@ -164,6 +166,7 @@ async fn db_get_comments(db: &Database) -> libsql::Result<Vec<AdminComment>> {
 pub async fn update_comment(
     comment_id: i64,
     comment_json: Json<AdminComment>,
+    _from_local: FromLocal,
     db: &State<Database>,
 ) -> Json<Vec<AdminComment>> {
     let comment = comment_json.0;
@@ -173,7 +176,7 @@ pub async fn update_comment(
 
     db_update_comment(comment, db).await.unwrap();
 
-    get_comments(db).await
+    get_comments(_from_local, db).await
 }
 
 async fn db_update_comment(comment: AdminComment, db: &Database) -> Result<()> {
@@ -191,10 +194,14 @@ async fn db_update_comment(comment: AdminComment, db: &Database) -> Result<()> {
 }
 
 #[delete("/admin/comments/<remote_addr>")]
-pub async fn delete_comments(remote_addr: &str, db: &State<Database>) -> Json<Vec<AdminComment>> {
+pub async fn delete_comments(
+    remote_addr: &str,
+    _from_local: FromLocal,
+    db: &State<Database>,
+) -> Json<Vec<AdminComment>> {
     db_delete_comments(remote_addr, db).await.unwrap();
 
-    get_comments(db).await
+    get_comments(_from_local, db).await
 }
 
 async fn db_delete_comments(remote_addr: &str, db: &Database) -> Result<()> {
@@ -210,10 +217,14 @@ async fn db_delete_comments(remote_addr: &str, db: &Database) -> Result<()> {
 }
 
 #[delete("/admin/comment/<comment_id>")]
-pub async fn delete_comment(comment_id: i64, db: &State<Database>) -> Json<Vec<AdminComment>> {
+pub async fn delete_comment(
+    comment_id: i64,
+    _from_local: FromLocal,
+    db: &State<Database>,
+) -> Json<Vec<AdminComment>> {
     db_delete_comment(comment_id, db).await.unwrap();
 
-    get_comments(db).await
+    get_comments(_from_local, db).await
 }
 
 async fn db_delete_comment(comment_id: i64, db: &Database) -> Result<()> {
@@ -283,7 +294,7 @@ mod tests {
     async fn test_create_comment(client: &Client) {
         let response = client
             .post(uri!(create_comment(1)))
-            .remote("123.123.123.123:123".parse().unwrap())
+            .remote("127.0.0.1:80".parse().unwrap())
             .json(&NewComment {
                 member_id: 1,
                 commented_by: "123.123.12.12".to_string(),
@@ -332,6 +343,7 @@ mod tests {
         comment.approved = approval;
         let response = client
             .put(uri!(super::update_comment(comment.id)))
+            .remote("127.0.0.1:80".parse().unwrap())
             .json(comment)
             .dispatch()
             .await;
@@ -355,7 +367,11 @@ mod tests {
     }
 
     async fn test_get_comments(approval: i64, client: &Client) -> Vec<AdminComment> {
-        let response = client.get(uri!(super::get_comments())).dispatch().await;
+        let response = client
+            .get(uri!(super::get_comments()))
+            .remote("127.0.0.1:80".parse().unwrap())
+            .dispatch()
+            .await;
         assert_eq!(response.status(), Status::Ok);
         let mut comments: Vec<AdminComment> =
             serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
@@ -374,13 +390,15 @@ mod tests {
     async fn test_admin_single_delete(client: &Client) {
         test_create_comment(client).await;
         let pre_comments = test_get_comments_not_empty(0, client).await;
-        let comment = pre_comments.get(0).unwrap();
+        let comment = pre_comments.first().unwrap();
 
         let response = client
             .delete(uri!(super::delete_comment(&comment.id)))
+            .remote("127.0.0.1:80".parse().unwrap())
             .dispatch()
             .await;
         assert_eq!(response.status(), Status::Ok);
+
         let comments: Vec<AdminComment> =
             serde_json::from_str(&response.into_string().await.unwrap()).unwrap();
         assert_ne!(pre_comments.len(), comments.len());
@@ -389,10 +407,11 @@ mod tests {
     async fn test_admin_mass_delete(client: &Client) {
         test_create_comment(client).await;
         let pre_comments = test_get_comments_not_empty(0, client).await;
-        let comment = pre_comments.get(0).unwrap();
+        let comment = pre_comments.first().unwrap();
 
         let response = client
             .delete(uri!(super::delete_comments(&comment.remote_addr)))
+            .remote("127.0.0.1:80".parse().unwrap())
             .dispatch()
             .await;
         assert_eq!(response.status(), Status::Ok);

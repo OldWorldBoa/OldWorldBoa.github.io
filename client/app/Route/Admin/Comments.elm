@@ -465,7 +465,7 @@ adminCommentDecoder =
             (D.field "member_id" D.int)
             (D.field "post_id" D.int)
             (D.field "remote_addr" D.string)
-            (D.field "commented_at" (D.int |> andThen (\val -> succeed (Time.millisToPosix val))))
+            (D.field "commented_at" (D.int |> andThen (\val -> succeed (Time.millisToPosix (val * 1000)))))
             (D.field "commented_by" D.string)
             (D.field "content" D.string)
             (D.field "approved" D.int)

@@ -8,11 +8,6 @@ const config = {
     });
 
     app.ports.loadContractions.send(localStorage.getItem("owb-contractions"));
-
-    app.ports.initializeMermad.subscribe(function () {
-      console.log("JS: Initialize Mermaid.");
-      mermaid.init();
-    });
   },
   flags: function () {
     return "You can decode this in Shared.elm using Json.Decode.string!";
