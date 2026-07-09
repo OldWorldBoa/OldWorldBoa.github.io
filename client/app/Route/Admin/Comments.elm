@@ -20,6 +20,7 @@ import Route.Portfolio.ContractionTimer exposing (Msg(..))
 import RouteBuilder exposing (App)
 import Server.Request exposing (Request)
 import Server.Response as Response exposing (Response)
+import Settings
 import Shared
 import Task
 import Time
@@ -101,7 +102,7 @@ init _ _ =
         [ Effect.fromCmd (Task.perform AdjustTimeZone Time.here)
         , Effect.fromCmd
             (Http.get
-                { url = "http://localhost:8000/admin/comments/"
+                { url = Settings.apiUrl ++ "/admin/comments/"
                 , expect = Http.expectJson GetComments adminCommentDecoder
                 }
             )
@@ -150,7 +151,7 @@ update _ _ msg model =
                 (Http.request
                     { method = "DELETE"
                     , headers = []
-                    , url = "http://localhost:8000/admin/comments/" ++ remote_addr
+                    , url = Settings.apiUrl ++ "/admin/comments/" ++ remote_addr
                     , body = Http.emptyBody
                     , expect = Http.expectJson CommentSaved adminCommentDecoder
                     , timeout = Nothing
@@ -168,7 +169,7 @@ update _ _ msg model =
                 (Http.request
                     { method = "DELETE"
                     , headers = []
-                    , url = "http://localhost:8000/admin/comment/" ++ String.fromInt comment_id
+                    , url = Settings.apiUrl ++ "/admin/comment/" ++ String.fromInt comment_id
                     , body = Http.emptyBody
                     , expect = Http.expectJson CommentSaved adminCommentDecoder
                     , timeout = Nothing
@@ -189,7 +190,7 @@ update _ _ msg model =
                     Http.request
                         { method = "PUT"
                         , headers = []
-                        , url = "http://localhost:8000/admin/comment/" ++ String.fromInt comment.id
+                        , url = Settings.apiUrl ++ "/admin/comment/" ++ String.fromInt comment.id
                         , body = Http.jsonBody (commentEncoder rejectComment)
                         , expect = Http.expectJson CommentSaved adminCommentDecoder
                         , timeout = Nothing
@@ -210,7 +211,7 @@ update _ _ msg model =
                     Http.request
                         { method = "PUT"
                         , headers = []
-                        , url = "http://localhost:8000/admin/comment/" ++ String.fromInt comment.id
+                        , url = Settings.apiUrl ++ "/admin/comment/" ++ String.fromInt comment.id
                         , body = Http.jsonBody (commentEncoder approveComment)
                         , expect = Http.expectJson CommentSaved adminCommentDecoder
                         , timeout = Nothing
