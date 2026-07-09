@@ -1,0 +1,32 @@
+[2m2026-06-17T16:48:15.232458Z[0m [32m INFO[0m [2matac::app::files::collection[0m[2m:[0m Saving collection "posts"
+[2m2026-06-17T16:48:15.232599Z[0m [32m INFO[0m [2matac::app::files::collection[0m[2m:[0m Saving collection "health"
+[2m2026-06-17T16:48:15.232649Z[0m [32m INFO[0m [2matac::app::files::collection[0m[2m:[0m Saving collection "comments"
+[2m2026-06-17T16:48:15.232724Z[0m [33m WARN[0m [2matac::app::files::key_bindings[0m[2m:[0m No key bindings file found, using default
+[2m2026-06-17T16:48:15.232730Z[0m [33m WARN[0m [2matac::app::files::theme[0m[2m:[0m No theme file found, using default
+[2m2026-06-17T16:48:17.080303Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: e
+[2m2026-06-17T16:48:18.353358Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Down
+[2m2026-06-17T16:48:18.504149Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Down
+[2m2026-06-17T16:48:18.892264Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Enter
+[2m2026-06-17T16:48:19.421104Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Down
+[2m2026-06-17T16:48:19.617129Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Enter
+[2m2026-06-17T16:48:20.488155Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Space
+[2m2026-06-17T16:48:20.488238Z[0m [32m INFO[0m [2matac::app::business_logic::request::http::send[0m[2m:[0m Sending request
+[2m2026-06-17T16:48:20.488312Z[0m [34mDEBUG[0m [1mHTTP request[0m[1m{[0m[3mhttp.request.method[0m[2m=[0mGET [3murl.scheme[0m[2m=[0mhttp [3mserver.address[0m[2m=[0m192.168.2.2 [3mserver.port[0m[2m=[0m8000 [3muser_agent.original[0m[2m=[0mATAC/v0.22.1 [3motel.kind[0m[2m=[0m"client" [3motel.name[0m[2m=[0mget all[1m}[0m[2m:[0m [2mreqwest::connect[0m[2m:[0m starting new connection: http://192.168.2.2:8000/
+[2m2026-06-17T16:48:20.488326Z[0m [34mDEBUG[0m [1mHTTP request[0m[1m{[0m[3mhttp.request.method[0m[2m=[0mGET [3murl.scheme[0m[2m=[0mhttp [3mserver.address[0m[2m=[0m192.168.2.2 [3mserver.port[0m[2m=[0m8000 [3muser_agent.original[0m[2m=[0mATAC/v0.22.1 [3motel.kind[0m[2m=[0m"client" [3motel.name[0m[2m=[0mget all[1m}[0m[2m:[0m [2mhyper_util::client::legacy::connect::http[0m[2m:[0m connecting to 192.168.2.2:8000
+[2m2026-06-17T16:48:20.489072Z[0m [34mDEBUG[0m [1mHTTP request[0m[1m{[0m[3mhttp.request.method[0m[2m=[0mGET [3murl.scheme[0m[2m=[0mhttp [3mserver.address[0m[2m=[0m192.168.2.2 [3mserver.port[0m[2m=[0m8000 [3muser_agent.original[0m[2m=[0mATAC/v0.22.1 [3motel.kind[0m[2m=[0m"client" [3motel.name[0m[2m=[0mget all[1m}[0m[2m:[0m [2mhyper_util::client::legacy::connect::http[0m[2m:[0m connected to 192.168.2.2:8000
+[2m2026-06-17T16:48:20.492959Z[0m [34mDEBUG[0m [1mHTTP request[0m[1m{[0m[3mhttp.request.method[0m[2m=[0mGET [3murl.scheme[0m[2m=[0mhttp [3mserver.address[0m[2m=[0m192.168.2.2 [3mserver.port[0m[2m=[0m8000 [3muser_agent.original[0m[2m=[0mATAC/v0.22.1 [3motel.kind[0m[2m=[0m"client" [3motel.name[0m[2m=[0mget all[1m}[0m[2m:[0m [2mhyper_util::client::legacy::pool[0m[2m:[0m pooling idle connection for ("http", 192.168.2.2:8000)
+[2m2026-06-17T16:48:45.479787Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Down
+[2m2026-06-17T16:48:45.634828Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Down
+[2m2026-06-17T16:48:49.161739Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Down
+[2m2026-06-17T16:48:49.317795Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Down
+[2m2026-06-17T16:48:49.883930Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Esc
+[2m2026-06-17T16:48:50.241835Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Down
+[2m2026-06-17T16:48:51.003787Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Enter
+[2m2026-06-17T16:48:51.702084Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Space
+[2m2026-06-17T16:48:51.702153Z[0m [32m INFO[0m [2matac::app::business_logic::request::http::send[0m[2m:[0m Sending request
+[2m2026-06-17T16:48:51.702209Z[0m [34mDEBUG[0m [1mHTTP request[0m[1m{[0m[3mhttp.request.method[0m[2m=[0mGET [3murl.scheme[0m[2m=[0mhttp [3mserver.address[0m[2m=[0m192.168.2.2 [3mserver.port[0m[2m=[0m8000 [3muser_agent.original[0m[2m=[0mATAC/v0.22.1 [3motel.kind[0m[2m=[0m"client" [3motel.name[0m[2m=[0madmin get all[1m}[0m[2m:[0m [2mreqwest::connect[0m[2m:[0m starting new connection: http://192.168.2.2:8000/
+[2m2026-06-17T16:48:51.702220Z[0m [34mDEBUG[0m [1mHTTP request[0m[1m{[0m[3mhttp.request.method[0m[2m=[0mGET [3murl.scheme[0m[2m=[0mhttp [3mserver.address[0m[2m=[0m192.168.2.2 [3mserver.port[0m[2m=[0m8000 [3muser_agent.original[0m[2m=[0mATAC/v0.22.1 [3motel.kind[0m[2m=[0m"client" [3motel.name[0m[2m=[0madmin get all[1m}[0m[2m:[0m [2mhyper_util::client::legacy::connect::http[0m[2m:[0m connecting to 192.168.2.2:8000
+[2m2026-06-17T16:48:51.702941Z[0m [34mDEBUG[0m [1mHTTP request[0m[1m{[0m[3mhttp.request.method[0m[2m=[0mGET [3murl.scheme[0m[2m=[0mhttp [3mserver.address[0m[2m=[0m192.168.2.2 [3mserver.port[0m[2m=[0m8000 [3muser_agent.original[0m[2m=[0mATAC/v0.22.1 [3motel.kind[0m[2m=[0m"client" [3motel.name[0m[2m=[0madmin get all[1m}[0m[2m:[0m [2mhyper_util::client::legacy::connect::http[0m[2m:[0m connected to 192.168.2.2:8000
+[2m2026-06-17T16:48:51.706452Z[0m [34mDEBUG[0m [1mHTTP request[0m[1m{[0m[3mhttp.request.method[0m[2m=[0mGET [3murl.scheme[0m[2m=[0mhttp [3mserver.address[0m[2m=[0m192.168.2.2 [3mserver.port[0m[2m=[0m8000 [3muser_agent.original[0m[2m=[0mATAC/v0.22.1 [3motel.kind[0m[2m=[0m"client" [3motel.name[0m[2m=[0madmin get all[1m}[0m[2m:[0m [2mhyper_util::client::legacy::pool[0m[2m:[0m pooling idle connection for ("http", 192.168.2.2:8000)
+[2m2026-06-17T17:07:38.586409Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: Esc
+[2m2026-06-17T17:07:38.993465Z[0m [34mDEBUG[0m [2matac::tui::events[0m[2m:[0m Key pressed: q

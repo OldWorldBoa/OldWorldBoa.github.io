@@ -25,6 +25,7 @@ import PagesMsg exposing (PagesMsg)
 import RouteBuilder exposing (App)
 import Server.Request exposing (Request)
 import Server.Response
+import Settings
 import Shared
 import Task
 import Time
@@ -119,7 +120,7 @@ init app _ =
         [ Effect.fromCmd (Task.perform AdjustTimeZone Time.here)
         , Effect.fromCmd
             (Http.get
-                { url = "http://localhost:8000/post/" ++ String.fromInt app.data.info.id ++ "/comments/"
+                { url = Settings.apiUrl ++ "/post/" ++ String.fromInt app.data.info.id ++ "/comments/"
                 , expect = Http.expectJson GetComments commentDecoder
                 }
             )
@@ -153,7 +154,7 @@ update app _ msg model =
             ( { model | newComment = NewComment 1 "" "", mode = CommentThanks }
             , Effect.fromCmd
                 (Http.post
-                    { url = "http://localhost:8000/post/" ++ String.fromInt app.data.info.id ++ "/comment/"
+                    { url = Settings.apiUrl ++ "/post/" ++ String.fromInt app.data.info.id ++ "/comment/"
                     , body = Http.jsonBody (newCommentEncoder model.newComment)
                     , expect = Http.expectJson GetComments commentDecoder
                     }
@@ -207,7 +208,7 @@ postContent routeParams =
 postInfo : RouteParams -> BackendTask FatalError PostInfo
 postInfo routeParams =
     BackendTask.Http.get
-        ("http://localhost:8000/post/" ++ routeParams.slug)
+        (Settings.apiUrl ++ "/post/" ++ routeParams.slug)
         (BackendTask.Http.expectJson postDecoder)
         |> BackendTask.allowFatal
 

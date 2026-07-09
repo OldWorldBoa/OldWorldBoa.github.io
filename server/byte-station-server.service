@@ -4,8 +4,9 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/oldworldboa/host/the_byte_station_server/
-ExecStart=cargo run --release
+Environment=ROCKET_ADDRESS=0.0.0.0
+WorkingDirectory=/www/byte-station-server
+ExecStart=/www/byte-station-server/server
 User=oldworldboa
 Group=oldworldboa
 Restart=always

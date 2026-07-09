@@ -19,6 +19,7 @@ import Route.Portfolio.ContractionTimer exposing (Msg(..))
 import RouteBuilder exposing (App)
 import Server.Request exposing (Request)
 import Server.Response as Response exposing (Response)
+import Settings
 import Shared
 import Task
 import Time
@@ -78,7 +79,7 @@ route =
 data : RouteParams -> Request -> BackendTask FatalError (Response Data ErrorPage)
 data _ _ =
     BackendTask.Http.getJson
-        "http://localhost:8000/posts"
+        (Settings.apiUrl ++ "/posts")
         postDecoder
         |> BackendTask.map
             (\posts -> Response.render (Data "" posts))

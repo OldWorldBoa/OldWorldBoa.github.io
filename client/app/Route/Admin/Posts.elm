@@ -20,6 +20,7 @@ import Route.Portfolio.ContractionTimer exposing (Msg(..))
 import RouteBuilder exposing (App)
 import Server.Request exposing (Request)
 import Server.Response as Response exposing (Response)
+import Settings
 import Shared
 import Task
 import Time
@@ -93,7 +94,7 @@ init _ _ =
         [ Effect.fromCmd (Task.perform AdjustTimeZone Time.here)
         , Effect.fromCmd
             (Http.get
-                { url = "http://localhost:8000/admin/posts/"
+                { url = Settings.apiUrl ++ "/admin/posts/"
                 , expect = Http.expectJson GetPosts postDecoder
                 }
             )
@@ -142,7 +143,7 @@ update _ _ msg model =
             ( model
             , Effect.fromCmd
                 (Http.post
-                    { url = "http://localhost:8000/admin/post"
+                    { url = Settings.apiUrl ++ "/admin/post"
                     , body = Http.jsonBody (postEncoder newPost)
                     , expect = Http.expectJson PostSaved postDecoder
                     }
@@ -272,7 +273,7 @@ update _ _ msg model =
                             Http.request
                                 { method = "PUT"
                                 , headers = []
-                                , url = "http://localhost:8000/admin/post/" ++ String.fromInt post.id
+                                , url = Settings.apiUrl ++ "/admin/post/" ++ String.fromInt post.id
                                 , body = Http.jsonBody (postEncoder post)
                                 , expect = Http.expectJson PostSaved postDecoder
                                 , timeout = Nothing

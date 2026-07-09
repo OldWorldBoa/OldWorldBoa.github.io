@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub fn rocket(db: Database) -> Rocket<Build> {
-    let base = "/";
+    let base = "/api";
     rocket::build()
         .mount(base, routes![index])
         .mount(

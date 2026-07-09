@@ -1,15 +1,13 @@
 module Route.Portfolio exposing (ActionData, Data, Model, Msg(..), RouteParams, action, data, route)
 
 import BackendTask exposing (BackendTask)
-import BackendTask.Http
-import Css exposing (auto, borderRadius, boxShadow4, center, displayFlex, flexWrap, fontFamilies, fontSize, height, justifyContent, margin, marginLeft, marginRight, marginTop, padding, px, rgb, textAlign, width, wrap)
+import Css exposing (auto, boxShadow4, center, displayFlex, flexWrap, fontFamilies, fontSize, height, margin, marginLeft, marginRight, padding, px, rgb, textAlign, width, wrap)
 import Effect exposing (Effect)
 import ErrorPage exposing (ErrorPage)
 import FatalError exposing (FatalError)
 import Head
 import Html.Styled exposing (Attribute, Html, div, hr, img, p, text)
 import Html.Styled.Attributes exposing (css, href, src, target)
-import Json.Decode as Decode
 import OWBTheme exposing (linkBtn, mobile)
 import PagesMsg exposing (PagesMsg)
 import RouteBuilder exposing (App)
@@ -46,7 +44,7 @@ init :
     App Data ActionData RouteParams
     -> Shared.Model
     -> ( Model, Effect Msg )
-init app shared =
+init _ _ =
     ( {}, Effect.none )
 
 
@@ -56,7 +54,7 @@ update :
     -> Msg
     -> Model
     -> ( Model, Effect Msg )
-update app shared msg model =
+update _ _ msg model =
     case msg of
         NoOp ->
             ( model, Effect.none )
@@ -68,7 +66,7 @@ subscriptions :
     -> Shared.Model
     -> Model
     -> Sub Msg
-subscriptions routeParams path shared model =
+subscriptions _ _ _ _ =
     Sub.none
 
 
@@ -84,7 +82,7 @@ data :
     RouteParams
     -> Request
     -> BackendTask FatalError (Server.Response.Response Data ErrorPage)
-data routeParams request =
+data _ _ =
     BackendTask.succeed
         (Server.Response.render
             {}
@@ -92,7 +90,7 @@ data routeParams request =
 
 
 head : App Data ActionData RouteParams -> List Head.Tag
-head app =
+head _ =
     []
 
 
@@ -101,7 +99,7 @@ view :
     -> Shared.Model
     -> Model
     -> View (PagesMsg Msg)
-view app shared model =
+view _ _ _ =
     { title = "Portfolio"
     , body =
         [ Html.Styled.toUnstyled
@@ -191,5 +189,5 @@ action :
     RouteParams
     -> Request
     -> BackendTask.BackendTask FatalError.FatalError (Server.Response.Response ActionData ErrorPage.ErrorPage)
-action routeParams request =
+action _ _ =
     BackendTask.succeed (Server.Response.render {})
