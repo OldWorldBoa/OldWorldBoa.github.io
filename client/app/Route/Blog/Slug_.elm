@@ -3,7 +3,7 @@ module Route.Blog.Slug_ exposing (ActionData, Data, Model, Msg, route)
 import BackendTask exposing (BackendTask)
 import BackendTask.File as File
 import BackendTask.Http
-import Css exposing (block, center, display, displayFlex, justifyContent, none, textAlign)
+import Css exposing (block, borderRadius, center, display, displayFlex, float, fontSize, important, justifyContent, marginRight, none, px, right, textAlign)
 import Effect exposing (Effect)
 import ErrorPage exposing (ErrorPage)
 import FatalError exposing (FatalError)
@@ -301,9 +301,18 @@ addCommentsHtml model =
         , OWBTheme.spacer
         , div
             []
-            [ h1 [ css [ displayFlex, justifyContent center ] ]
+            [ div [ css [ display block, justifyContent center, fontSize (px 35) ] ]
                 [ text "Comments"
-                , OWBTheme.faButton OWBTheme.theme.primary (PagesMsg.fromMsg OpenInputComment) "fa-solid fa-comment-medical"
+                , OWBTheme.btn
+                    [ onClick (PagesMsg.fromMsg OpenInputComment)
+                    , css
+                        [ important (borderRadius (px 25))
+                        , fontSize (px 19)
+                        , important (marginRight (px 10))
+                        , float right
+                        ]
+                    ]
+                    [ text "Add" ]
                 ]
             ]
         , commentsThanksHtml model
